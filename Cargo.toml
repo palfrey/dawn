@@ -1,0 +1,13 @@
+[package]
+name = "dawn"
+version = "0.1.0"
+authors = ["Tom Parker <palfrey@tevp.net>"]
+
+[dependencies]
+nickel = "*"
+hyper = "*"
+url = "*"
+log = "*"
+json = "*"
+log4rs = {version = ">= 0.3.3", features=["yaml"]}
+mustache = "*"
