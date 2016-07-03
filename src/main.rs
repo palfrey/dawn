@@ -64,7 +64,7 @@ fn arrivals_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, 
         .insert_str("stopName", last_item["platformName"].as_str().unwrap())
         .build();
 
-    let template = mustache::compile_path("resources/templates/arrivals.tpl").expect("working template");
+    let template = mustache::compile_path("resources/templates/arrivals.mustache").expect("working template");
     let mut buffer: Vec<u8> = vec![];
     template.render_data(&mut buffer, &data);
     response.send(buffer)
