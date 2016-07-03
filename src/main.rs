@@ -1,10 +1,10 @@
 extern crate log4rs;
 #[macro_use] extern crate nickel;
-use nickel::{Nickel, HttpRouter, Request, Response, MiddlewareResult, MediaType};
+use nickel::{Nickel, HttpRouter, Request, Response, MiddlewareResult, MediaType, QueryString};
 use nickel::status::StatusCode;
 
 extern crate hyper;
-use hyper::client::Client;
+use hyper::client::{Client,RequestBuilder};
 use std::io::Read;
 
 extern crate json;
@@ -19,16 +19,12 @@ extern crate time;
 
 // https://api.tfl.gov.uk/StopPoint?lat=51.423896&lon=-0.045525&stopTypes=NaptanOnstreetBusCoachStopPair&radius=300
 
-fn arrivals_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>) -> MiddlewareResult<'a, D> {
-    let client = Client::new();
-    let mut res = match client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals",
-        request.param("stopid").unwrap_or("Missing stopid")))
-        .send()
+fn json_for_request(rb: RequestBuilder) -> Result<json::JsonValue, String> {
+    let mut res = match rb.send()
     {
         Ok(val) => val,
         Err(_) => {
-            response.set(StatusCode::BadGateway);
-            return response.send("Can't connect to TfL");
+            return Err("Can't connect to TfL".to_string());
         }
     };
     let mut buffer: String = String::new();
@@ -37,8 +33,30 @@ fn arrivals_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, 
     {
         Ok(val) => val,
         Err(_) => {
+            return Err(format!("Bad json: {} ", buffer));
+        }
+    };
+    return Ok(obj);
+}
+
+fn render_to_response<'a, D>(mut response: Response<'a, D>, path: &str, data: &mustache::Data) -> MiddlewareResult<'a, D> {
+    let template = mustache::compile_path(path).expect("working template");
+    let mut buffer: Vec<u8> = vec![];
+    template.render_data(&mut buffer, data);
+    response.set(MediaType::Html);
+    response.send(buffer)
+}
+
+
+fn arrivals_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>) -> MiddlewareResult<'a, D> {
+    let client = Client::new();
+    let obj = match json_for_request(client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals",
+        request.param("stopid").unwrap_or("Missing stopid"))))
+    {
+        Ok(val) => val,
+        Err(val) => {
             response.set(StatusCode::BadGateway);
-            return response.send(format!("Bad json: {} ", buffer));
+            return response.send(val);
         }
     };
 
@@ -68,24 +86,47 @@ fn arrivals_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, 
             }
             vecb
         })
-        .insert_str("stopNumber", last_item["stationName"].as_str().unwrap())
-        .insert_str("stopName", last_item["platformName"].as_str().unwrap())
+        .insert_str("stopName", last_item["stationName"].as_str().unwrap())
+        .insert_str("stopNumber", last_item["platformName"].as_str().unwrap())
         .build();
 
-    let template = mustache::compile_path("resources/templates/arrivals.mustache").expect("working template");
-    let mut buffer: Vec<u8> = vec![];
-    template.render_data(&mut buffer, &data);
-    response.set(MediaType::Html);
-    response.send(buffer)
+    render_to_response(response, "resources/templates/arrivals.mustache", &data)
 }
 
 fn root_handler<'a, D>(_: &mut Request<D>, mut response: Response<'a, D>) -> MiddlewareResult<'a, D> {
     let data = MapBuilder::new().build();
-    let template = mustache::compile_path("resources/templates/root.mustache").expect("working template");
-    let mut buffer: Vec<u8> = vec![];
-    template.render_data(&mut buffer, &data);
-    response.set(MediaType::Html);
-    response.send(buffer)
+    render_to_response(response, "resources/templates/root.mustache", &data)
+}
+
+fn search_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>) -> MiddlewareResult<'a, D> {
+    //https://api.tfl.gov.uk/StopPoint/Search/knighton?faresOnly=False&app_id=&app_key=
+    let client = Client::new();
+    let query = request.query().get("query").expect("Missing query");
+    let url = &format!("https://api.tfl.gov.uk/StopPoint/Search/{}?modes=bus", query);
+    let obj = match json_for_request(client.get(url))
+    {
+        Ok(val) => val,
+        Err(val) => {
+            response.set(StatusCode::BadGateway);
+            return response.send(val);
+        }
+    };
+
+    let data = MapBuilder::new()
+        .insert_vec("stops", |vecbuilder| {
+            let mut vecb = vecbuilder;
+            for stop in obj["matches"].members() {
+                vecb = vecb.push_map(|mapbuilder| {
+                    mapbuilder
+                        .insert_str("id", stop["id"].as_str().unwrap())
+                        .insert_str("name", stop["name"].as_str().unwrap())
+                });
+            }
+            vecb
+        })
+        .insert_str("query", query)
+        .build();
+    render_to_response(response, "resources/templates/search.mustache", &data)
 }
 
 fn main() {
@@ -97,6 +138,7 @@ fn main() {
     let mut router = Nickel::router();
 
     router.get("/", root_handler);
+    router.get("/search", search_handler);
     router.get("/arrivals/:stopid", arrivals_handler);
 
     server.utilize(router);
