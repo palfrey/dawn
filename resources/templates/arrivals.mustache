@@ -1,5 +1,10 @@
+<html>
+<body>
 {{stopNumber}} (Stop {{stopName}})
 
+<ul>
 {{#buses}}
-{{expectedArrival}}: {{line}} to {{destination}} via {{towards}}
+<li>{{expectedArrival}}: {{line}} to {{destination}} via {{towards}}</li>
 {{/buses}}
+</ul>
+</body>

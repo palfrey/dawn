@@ -1,6 +1,6 @@
 extern crate log4rs;
 #[macro_use] extern crate nickel;
-use nickel::{Nickel, HttpRouter, Request, Response, MiddlewareResult};
+use nickel::{Nickel, HttpRouter, Request, Response, MiddlewareResult, MediaType};
 use nickel::status::StatusCode;
 
 extern crate hyper;
@@ -67,6 +67,7 @@ fn arrivals_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, 
     let template = mustache::compile_path("resources/templates/arrivals.mustache").expect("working template");
     let mut buffer: Vec<u8> = vec![];
     template.render_data(&mut buffer, &data);
+    response.set(MediaType::Html);
     response.send(buffer)
 }
 
