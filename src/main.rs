@@ -70,27 +70,34 @@ fn arrivals_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, 
         }
     };
     let member_slice = members.as_slice();
-    let last_item = member_slice[0].clone();
-    let sorted_members = members.sorted_by(|a, b| a["expectedArrival"].as_str().unwrap().cmp(b["expectedArrival"].as_str().unwrap()));
+    let data = {
+        if member_slice.len() == 0 {
+            MapBuilder::new().build()
+        }
+        else {
+            let last_item = member_slice[0].clone();
+            let sorted_members = members.sorted_by(|a, b| a["expectedArrival"].as_str().unwrap().cmp(b["expectedArrival"].as_str().unwrap()));
 
-    let data = MapBuilder::new()
-        .insert_vec("buses", |vecbuilder| {
-            let mut vecb = vecbuilder;
-            for stop in sorted_members.clone() {
-                vecb = vecb.push_map(|mapbuilder| {
-                    let when = time::strptime(stop["expectedArrival"].as_str().unwrap(), "%FT%TZ").unwrap();
-                    mapbuilder
-                        .insert_str("line", stop["lineName"].as_str().unwrap())
-                        .insert_str("destination", stop["destinationName"].as_str().unwrap())
-                        .insert_str("towards", stop["towards"].as_str().unwrap())
-                        .insert_str("expectedArrival", when.to_local().strftime("%H:%M").unwrap())
-                });
+            MapBuilder::new()
+                .insert_vec("buses", |vecbuilder| {
+                    let mut vecb = vecbuilder;
+                    for stop in sorted_members.clone() {
+                        vecb = vecb.push_map(|mapbuilder| {
+                            let when = time::strptime(stop["expectedArrival"].as_str().unwrap(), "%FT%TZ").unwrap();
+                            mapbuilder
+                                .insert_str("line", stop["lineName"].as_str().unwrap())
+                                .insert_str("destination", stop["destinationName"].as_str().unwrap())
+                                .insert_str("towards", stop["towards"].as_str().unwrap())
+                                .insert_str("expectedArrival", when.to_local().strftime("%H:%M").unwrap())
+                        });
+                    }
+                    vecb
+                })
+                .insert_str("stopName", last_item["stationName"].as_str().unwrap())
+                .insert_str("stopNumber", last_item["platformName"].as_str().unwrap())
+                .build()
             }
-            vecb
-        })
-        .insert_str("stopName", last_item["stationName"].as_str().unwrap())
-        .insert_str("stopNumber", last_item["platformName"].as_str().unwrap())
-        .build();
+        };
 
     render_to_response(response, "resources/templates/arrivals.mustache", &data)
 }
