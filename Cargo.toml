@@ -11,3 +11,4 @@ log = "*"
 json = "*"
 log4rs = {version = ">= 0.3.3", features=["yaml"]}
 mustache = "*"
+itertools = "*"

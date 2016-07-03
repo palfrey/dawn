@@ -13,6 +13,9 @@ use json::iterators::Members;
 extern crate mustache;
 use mustache::MapBuilder;
 
+extern crate itertools;
+use itertools::Itertools;
+
 // https://api.tfl.gov.uk/StopPoint?lat=51.423896&lon=-0.045525&stopTypes=NaptanOnstreetBusCoachStopPair&radius=300
 
 fn arrivals_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>) -> MiddlewareResult<'a, D> {
@@ -45,11 +48,14 @@ fn arrivals_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, 
             return response.send(format!("No stops in: {:?}", obj));
         }
     };
-    let last_item = &members.as_slice()[0];
+    let member_slice = members.as_slice();
+    let last_item = member_slice[0].clone();
+    let sorted_members = members.sorted_by(|a, b| a["expectedArrival"].as_str().unwrap().cmp(b["expectedArrival"].as_str().unwrap()));
+
     let data = MapBuilder::new()
         .insert_vec("buses", |vecbuilder| {
             let mut vecb = vecbuilder;
-            for stop in members.as_slice() {
+            for stop in sorted_members.clone() {
                 vecb = vecb.push_map(|mapbuilder| {
                     mapbuilder
                         .insert_str("line", stop["lineName"].as_str().unwrap())
