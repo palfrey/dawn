@@ -1,9 +1,11 @@
 extern crate log4rs;
+extern crate hyper;
+
 #[macro_use] extern crate nickel;
 use nickel::{Nickel, HttpRouter, Request, Response, MiddlewareResult, MediaType, QueryString};
 use nickel::status::StatusCode;
+use hyper::header::Location;
 
-extern crate hyper;
 use hyper::client::{Client,RequestBuilder};
 use std::io::Read;
 
@@ -129,6 +131,32 @@ fn search_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>
     render_to_response(response, "resources/templates/search.mustache", &data)
 }
 
+fn id_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>) -> MiddlewareResult<'a, D> {
+    //https://api.tfl.gov.uk/StopPoint/Search/knighton?faresOnly=False&app_id=&app_key=
+    let client = Client::new();
+    let query = request.param("id").expect("Missing id");
+    let url = &format!("https://api.tfl.gov.uk/StopPoint/{}", query);
+    let obj = match json_for_request(client.get(url))
+    {
+        Ok(val) => val,
+        Err(val) => {
+            response.set(StatusCode::BadGateway);
+            return response.send(val);
+        }
+    };
+
+    let id = &obj["lineGroup"][0]["naptanIdReference"];
+    match id {
+        &json::JsonValue::Null => panic!("null!"),
+        &json::JsonValue::String(ref val) => {
+            response.set(Location(format!("/arrivals/{}", val)))
+                    .set(StatusCode::PermanentRedirect);
+        }
+        _ => panic!("Something else!")
+    };
+    response.send("")
+}
+
 fn main() {
     /*let gridref = osgridref::OsGridRef::new(535987 as f32,171440 as f32);
     let latlon = gridref.to_lat_lon(datum::WGS84);
@@ -139,6 +167,7 @@ fn main() {
 
     router.get("/", root_handler);
     router.get("/search", search_handler);
+    router.get("/id/:id", id_handler);
     router.get("/arrivals/:stopid", arrivals_handler);
 
     server.utilize(router);
