@@ -79,6 +79,15 @@ fn arrivals_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, 
     response.send(buffer)
 }
 
+fn root_handler<'a, D>(_: &mut Request<D>, mut response: Response<'a, D>) -> MiddlewareResult<'a, D> {
+    let data = MapBuilder::new().build();
+    let template = mustache::compile_path("resources/templates/root.mustache").expect("working template");
+    let mut buffer: Vec<u8> = vec![];
+    template.render_data(&mut buffer, &data);
+    response.set(MediaType::Html);
+    response.send(buffer)
+}
+
 fn main() {
     /*let gridref = osgridref::OsGridRef::new(535987 as f32,171440 as f32);
     let latlon = gridref.to_lat_lon(datum::WGS84);
@@ -87,6 +96,7 @@ fn main() {
     let mut server = Nickel::new();
     let mut router = Nickel::router();
 
+    router.get("/", root_handler);
     router.get("/arrivals/:stopid", arrivals_handler);
 
     server.utilize(router);
