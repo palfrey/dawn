@@ -15,6 +15,7 @@ use mustache::MapBuilder;
 
 extern crate itertools;
 use itertools::Itertools;
+extern crate time;
 
 // https://api.tfl.gov.uk/StopPoint?lat=51.423896&lon=-0.045525&stopTypes=NaptanOnstreetBusCoachStopPair&radius=300
 
@@ -57,11 +58,12 @@ fn arrivals_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, 
             let mut vecb = vecbuilder;
             for stop in sorted_members.clone() {
                 vecb = vecb.push_map(|mapbuilder| {
+                    let when = time::strptime(stop["expectedArrival"].as_str().unwrap(), "%FT%TZ").unwrap();
                     mapbuilder
                         .insert_str("line", stop["lineName"].as_str().unwrap())
                         .insert_str("destination", stop["destinationName"].as_str().unwrap())
                         .insert_str("towards", stop["towards"].as_str().unwrap())
-                        .insert_str("expectedArrival", stop["expectedArrival"].as_str().unwrap())
+                        .insert_str("expectedArrival", when.to_local().strftime("%H:%M").unwrap())
                 });
             }
             vecb

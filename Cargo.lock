@@ -9,6 +9,7 @@ dependencies = [
  "log4rs 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "mustache 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "nickel 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "time 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",
  "url 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
