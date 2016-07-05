@@ -1,5 +1,8 @@
+#[macro_use]
+extern crate log;
 extern crate log4rs;
 extern crate hyper;
+extern crate get_if_addrs;
 
 #[macro_use]
 extern crate nickel;
@@ -224,11 +227,7 @@ fn nearby_handler<'a, D>(request: &mut Request<D>,
     render_to_response(response, "resources/templates/search.mustache", &data)
 }
 
-fn main() {
-    // let gridref = osgridref::OsGridRef::new(535987 as f32,171440 as f32);
-    // let latlon = gridref.to_lat_lon(datum::WGS84);
-    // println!("{:?}", latlon);
-    log4rs::init_file("log.yaml", Default::default()).unwrap();
+fn run(ip: std::net::IpAddr, port: u16) {
     let mut server = Nickel::new();
     let mut router = Nickel::router();
 
@@ -239,6 +238,24 @@ fn main() {
     router.get("/arrivals/:stopid", arrivals_handler);
 
     server.utilize(router);
+    server.listen((ip, port));
+}
+
+fn main() {
+    log4rs::init_file("log.yaml", Default::default()).unwrap();
     let port = env::var("PORT").unwrap_or("8000".to_string()).parse::<u16>().unwrap();
-    server.listen(("127.0.0.1", port));
+    let mut handles = Vec::new();
+    for iface in get_if_addrs::get_if_addrs().unwrap() {
+        handles.push(::std::thread::spawn(move || {
+            let ip = iface.ip();
+            info!("Listening on {}:{} for {}", ip, port, iface.name);
+            run(ip, port);
+        }));
+    }
+
+    info!("All listeners spawned");
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
 }
