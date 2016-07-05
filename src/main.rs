@@ -80,6 +80,12 @@ fn arrivals_handler<'a, D>(request: &mut Request<D>,
             let sorted_members = members.sorted_by(|a, b| {
                 a["expectedArrival"].as_str().unwrap().cmp(b["expectedArrival"].as_str().unwrap())
             });
+            let platform_name = last_item["platformName"].as_str().unwrap();
+            let stop_number = if platform_name == "null" {
+                "".to_string()
+            } else {
+                format!(" (Stop {})", platform_name)
+            };
 
             MapBuilder::new()
                 .insert_vec("buses", |vecbuilder| {
@@ -100,7 +106,7 @@ fn arrivals_handler<'a, D>(request: &mut Request<D>,
                     vecb
                 })
                 .insert_str("stopName", last_item["stationName"].as_str().unwrap())
-                .insert_str("stopNumber", last_item["platformName"].as_str().unwrap())
+                .insert_str("stopNumber", stop_number)
                 .build()
         }
     };
