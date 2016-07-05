@@ -1,10 +1,14 @@
 <html>
 <head><title>{{stopName}}</title></head>
 <body>
-{{stopName}} {{stopNumber}}
+{{stopName}} {{stopNumber}} - retrieved at {{when}}
 <ul>
 {{#buses}}
 <li>{{expectedArrival}}: {{line}} to {{destination}}</li>
 {{/buses}}
 </ul>
+<a href="/">Back to front page</a>
+<hr />
+Powered by TfL Open Data<br />
+Contains OS data &copy; Crown copyright and database rights 2016
 </body>

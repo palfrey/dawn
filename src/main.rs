@@ -107,6 +107,7 @@ fn arrivals_handler<'a, D>(request: &mut Request<D>,
                 })
                 .insert_str("stopName", last_item["stationName"].as_str().unwrap())
                 .insert_str("stopNumber", stop_number)
+                .insert_str("when", time::now().strftime("%H:%M").unwrap())
                 .build()
         }
     };
