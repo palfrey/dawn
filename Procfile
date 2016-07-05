@@ -1,1 +1,1 @@
-web: ./target/debug/dawn
+web: ./target/release/dawn
