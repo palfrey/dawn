@@ -121,7 +121,7 @@ fn arrivals_handler<'a, D>(request: &mut Request<D>,
 }
 
 fn root_handler<'a, D>(_: &mut Request<D>,
-                       mut response: Response<'a, D>)
+                       response: Response<'a, D>)
                        -> MiddlewareResult<'a, D> {
     let data = MapBuilder::new().build();
     render_to_response(response, "resources/templates/root.mustache", &data)
