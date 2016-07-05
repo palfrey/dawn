@@ -20,6 +20,8 @@ extern crate itertools;
 use itertools::Itertools;
 extern crate time;
 
+use std::env;
+
 fn json_for_request(rb: RequestBuilder) -> Result<json::JsonValue, String> {
     let mut res = match rb.send() {
         Ok(val) => val,
@@ -237,6 +239,6 @@ fn main() {
     router.get("/arrivals/:stopid", arrivals_handler);
 
     server.utilize(router);
-    let port = 8000;
+    let port = env::var("PORT").unwrap_or("8000".to_string()).parse::<u16>().unwrap();
     server.listen(("127.0.0.1", port));
 }
