@@ -5,5 +5,32 @@
 <form action="/search" method="get">
 	Query <input type="text" name="query" />
 	<input type="submit" value="Search" />
+</form>
+<span id="info"></span>
+<form action="/nearby" method="get" id="nearby-form">
+	<input type="hidden" name="latitude" />
+	<input type="hidden" name="longitude" />
+	<script>
+		function getLocation(e) {
+			var event = e || window.event;
+			event.preventDefault();
+			var info = document.getElementById("info");
+			if (navigator.geolocation) {
+				navigator.geolocation.getCurrentPosition(setPosition);
+				info.innerHTML = "Getting location...";
+			} else {
+				info.innerHTML = "Geolocation is not supported by this browser.";
+			}
+			return false;
+		}
+		function setPosition(position) {
+			var latitude = document.getElementsByName("latitude")[0];
+			latitude.setAttribute("value", position.coords.latitude);
+			var longitude = document.getElementsByName("longitude")[0];
+			longitude.value = position.coords.longitude;
+			document.getElementById("nearby-form").submit();
+		}
+	</script>
+	<input type="submit" value="Nearby stops" onClick="javascript:getLocation();" />
 </body>
 </html>

@@ -1,9 +1,10 @@
 <html>
 <head><title>Search: {{query}}</title></head>
 <body>
+<h2>Search: {{query}}</h2>
 <ul>
 {{#stops}}
-<li><a href="/id/{{id}}">{{name}}</a></li>
+<li><a href="/id/{{id}}">{{name}}{{stop}}</a></li>
 {{/stops}}
 </ul>
 </body>

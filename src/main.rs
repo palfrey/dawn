@@ -56,7 +56,7 @@ fn arrivals_handler<'a, D>(request: &mut Request<D>,
     let client = Client::new();
     let obj =
         match json_for_request(client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals",
-                          request.param("stopid").unwrap_or("Missing stopid")))) {
+                          request.param("stopid").expect("Missing stopid")))) {
             Ok(val) => val,
             Err(val) => {
                 response.set(StatusCode::BadGateway);
@@ -118,7 +118,6 @@ fn root_handler<'a, D>(_: &mut Request<D>,
 fn search_handler<'a, D>(request: &mut Request<D>,
                          mut response: Response<'a, D>)
                          -> MiddlewareResult<'a, D> {
-    // https://api.tfl.gov.uk/StopPoint/Search/knighton?faresOnly=False&app_id=&app_key=
     let client = Client::new();
     let query = request.query().get("query").expect("Missing query");
     let url = &format!("https://api.tfl.gov.uk/StopPoint/Search/{}?modes=bus",
@@ -150,7 +149,6 @@ fn search_handler<'a, D>(request: &mut Request<D>,
 fn id_handler<'a, D>(request: &mut Request<D>,
                      mut response: Response<'a, D>)
                      -> MiddlewareResult<'a, D> {
-    // https://api.tfl.gov.uk/StopPoint/Search/knighton?faresOnly=False&app_id=&app_key=
     let client = Client::new();
     let query = request.param("id").expect("Missing id");
     let url = &format!("https://api.tfl.gov.uk/StopPoint/{}", query);
@@ -174,6 +172,49 @@ fn id_handler<'a, D>(request: &mut Request<D>,
     response.send("")
 }
 
+fn nearby_handler<'a, D>(request: &mut Request<D>,
+                         mut response: Response<'a, D>)
+                         -> MiddlewareResult<'a, D> {
+    let client = Client::new();
+    let query = request.query();
+    let latitude = query.get("latitude").expect("Missing latitude");
+    let longitude = query.get("longitude").expect("Missing longitude");
+    let url = &format!("https://api.tfl.gov.\
+                        uk/StopPoint?lat={}&lon={}\
+                        &stopTypes=NaptanOnstreetBusCoachStopPair&radius=300",
+                       latitude,
+                       longitude);
+    let obj = match json_for_request(client.get(url)) {
+        Ok(val) => val,
+        Err(val) => {
+            response.set(StatusCode::BadGateway);
+            return response.send(val);
+        }
+    };
+
+    let data = MapBuilder::new()
+        .insert_vec("stops", |vecbuilder| {
+            let mut vecb = vecbuilder;
+            for stopgroup in obj["stopPoints"].members() {
+                for stop in stopgroup["children"].members() {
+                    vecb = vecb.push_map(|mapbuilder| {
+                        let letter = match stop["stopLetter"].as_str() {
+                            Some(val) => format!(" ({})", val),
+                            None => "".to_string(),
+                        };
+                        mapbuilder.insert_str("id", stop["naptanId"].as_str().unwrap())
+                            .insert_str("stop", letter)
+                            .insert_str("name", stop["commonName"].as_str().unwrap())
+                    });
+                }
+            }
+            vecb
+        })
+        .insert_str("query", "Nearby stops")
+        .build();
+    render_to_response(response, "resources/templates/search.mustache", &data)
+}
+
 fn main() {
     // let gridref = osgridref::OsGridRef::new(535987 as f32,171440 as f32);
     // let latlon = gridref.to_lat_lon(datum::WGS84);
@@ -185,6 +226,7 @@ fn main() {
     router.get("/", root_handler);
     router.get("/search", search_handler);
     router.get("/id/:id", id_handler);
+    router.get("/nearby", nearby_handler);
     router.get("/arrivals/:stopid", arrivals_handler);
 
     server.utilize(router);
