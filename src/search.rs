@@ -10,7 +10,7 @@ pub fn search_handler<'a, D>(request: &mut Request<D>,
                              -> MiddlewareResult<'a, D> {
     let client = Client::new();
     let query = request.query().get("query").expect("Missing query");
-    let url = &format!("https://api.tfl.gov.uk/StopPoint/Search/{}?modes=bus",
+    let url = &format!("https://api.tfl.gov.uk/StopPoint/Search/{}?modes=bus,replacement-bus",
                        query);
     let obj = match common::json_for_request(client.get(url)) {
         Ok(val) => val,
