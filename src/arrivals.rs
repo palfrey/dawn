@@ -53,10 +53,19 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                             let when = time::strptime(stop["expectedArrival"].as_str().unwrap(),
                                                       "%FT%TZ")
                                 .unwrap();
+                            let until = (when - time::now()).num_minutes();
+                            let until_text = if until == 1 {
+                                "1 minute".to_string()
+                            } else if until > 0 {
+                                format!("{} minutes", until)
+                            } else {
+                                "due".to_string()
+                            };
                             mapbuilder.insert_str("line", stop["lineName"].as_str().unwrap())
                                 .insert_str("destination",
                                             stop["destinationName"].as_str().unwrap())
                                 .insert_str("towards", stop["towards"].as_str().unwrap())
+                                .insert_str("minutes", until_text)
                                 .insert_str("expectedArrival",
                                             when.to_local().strftime("%H:%M").unwrap())
                         });
