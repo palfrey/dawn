@@ -1,0 +1,25 @@
+<html>
+<head>
+	<title>Favourites</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<h2>Favourites</h2>
+<ul>
+{{#favourites}}
+<li><a href="/arrivals/{{key}}">{{value}}</a>
+	<form action="/favourite-remove" method="post" id="nearby-form">
+		<input type="hidden" name="stopid" value="{{key}}" />
+		<input type="submit" value="Remove" />
+	</form>
+{{/favourites}}
+</ul>
+{{^favourites}}
+No favourites yet<br /><br />
+{{/favourites}}
+<a href="/">Back to front page</a>
+<hr />
+Powered by TfL Open Data<br />
+Contains OS data &copy; Crown copyright and database rights 2016<br />
+By <a href="http://tevp.net/">Tom Parker</a>. <a href="https://github.com/palfrey/dawn">Source Code</a>.
+</body>

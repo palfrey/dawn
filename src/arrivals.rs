@@ -87,6 +87,7 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                     }
                     vecb
                 })
+                .insert_str("stopId", stopid)
                 .insert_str("stopName", last_item["stationName"].as_str().unwrap())
                 .insert_str("stopNumber", stop_number)
                 .insert_str("when", time::now().strftime("%H:%M").unwrap())

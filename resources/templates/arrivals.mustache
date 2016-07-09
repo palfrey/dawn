@@ -13,6 +13,11 @@ Retrieved at {{when}}<br /><br />
 {{^buses}}
 No arrivals soon<br /><br />
 {{/buses}}
+<form action="/favourites" method="post" id="nearby-form">
+	<input type="hidden" name="stopid" value="{{stopId}}" />
+	<input type="hidden" name="prettyName" value="{{stopName}} {{stopNumber}}" />
+	<input type="submit" value="Add to favourites" />
+</form>
 <a href="/">Back to front page</a>
 <hr />
 Powered by TfL Open Data<br />

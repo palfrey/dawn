@@ -7,6 +7,8 @@ extern crate get_if_addrs;
 #[macro_use]
 extern crate nickel;
 use nickel::{Nickel, HttpRouter, Request, Response, MiddlewareResult};
+extern crate url;
+extern crate cookie;
 
 extern crate json;
 extern crate mustache;
@@ -22,6 +24,7 @@ mod common;
 mod arrivals;
 mod id;
 mod nearby;
+mod favourite;
 
 fn root_handler<'a, D>(_: &mut Request<D>, response: Response<'a, D>) -> MiddlewareResult<'a, D> {
     let data = MapBuilder::new().build();
@@ -36,6 +39,9 @@ fn run(ip: std::net::IpAddr, port: u16) {
     router.get("/search", search::search_handler);
     router.get("/id/:id", id::id_handler);
     router.get("/nearby", nearby::nearby_handler);
+    router.get("/favourites", favourite::list_favourites);
+    router.post("/favourites", favourite::add_favourite);
+    router.post("/favourite-remove", favourite::remove_favourite);
     router.get("/arrivals/:stopid", arrivals::arrivals_handler);
 
     server.utilize(router);
