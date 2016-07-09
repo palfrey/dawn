@@ -13,7 +13,7 @@ pub fn nearby_handler<'a, D>(request: &mut Request<D>,
     let longitude = query.get("longitude").expect("Missing longitude");
     let url = &format!("https://api.tfl.gov.\
                         uk/StopPoint?lat={}&lon={}\
-                        &stopTypes=NaptanOnstreetBusCoachStopPair&radius=300",
+                        &stopTypes=NaptanOnstreetBusCoachStopPair&radius=500",
                        latitude,
                        longitude);
     let obj = match common::json_for_request(client.get(url)) {
