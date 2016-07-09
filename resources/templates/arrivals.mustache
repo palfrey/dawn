@@ -5,12 +5,11 @@
 </head>
 <body>
 <h2>{{stopName}} {{stopNumber}}</h2>
-Retrieved at {{when}}
-<ul>
+Retrieved at {{when}}<br /><br />
 {{#buses}}
-<li>{{minutes}} ({{expectedArrival}}): <b>{{line}}</b> to <b>{{destination}}</b></li>
+{{minutes}} ({{expectedArrival}}): <b>{{line}}</b> to <b>{{destination}}</b><br />
 {{/buses}}
-</ul>
+<br />
 {{^buses}}
 No arrivals soon<br /><br />
 {{/buses}}
