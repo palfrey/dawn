@@ -19,18 +19,31 @@
 			event.preventDefault();
 			var info = document.getElementById("info");
 			if (navigator.geolocation) {
-				navigator.geolocation.getCurrentPosition(setPosition);
+				var options = {
+					enableHighAccuracy: true,
+					timeout: 5000,
+					maximumAge: 5000
+				};
+				navigator.geolocation.getCurrentPosition(getPosition, positionError, options);
 				info.innerHTML = "Getting location...";
 			} else {
 				info.innerHTML = "Geolocation is not supported by this browser.";
 			}
 			return false;
 		}
-		function setPosition(position) {
+
+		function positionError(err) {
+			var info = document.getElementById("info");
+			info.innerHTML = "Can't get location: " + err;
+		}
+
+		function getPosition(position) {
 			var latitude = document.getElementsByName("latitude")[0];
 			latitude.setAttribute("value", position.coords.latitude);
 			var longitude = document.getElementsByName("longitude")[0];
 			longitude.value = position.coords.longitude;
+			var info = document.getElementById("info");
+			info.innerHTML = "Got location, retrieving stops...";
 			document.getElementById("nearby-form").submit();
 		}
 	</script>
