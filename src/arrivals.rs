@@ -11,10 +11,11 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                                mut response: Response<'a, D>)
                                -> MiddlewareResult<'a, D> {
     let client = Client::new();
+    let stopid = request.param("stopid").expect("Missing stopid");
     let obj =
         match common::json_for_request(
             client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals",
-                          request.param("stopid").expect("Missing stopid")))) {
+                          stopid))) {
             Ok(val) => val,
             Err(val) => {
                 response.set(StatusCode::BadGateway);
@@ -32,7 +33,21 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
     let member_slice = members.as_slice();
     let data = {
         if member_slice.len() == 0 {
-            MapBuilder::new().build()
+            let stopobj = match common::json_for_request(
+                client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}",
+                              stopid))) {
+                Ok(val) => val,
+                Err(val) => {
+                    response.set(StatusCode::BadGateway);
+                    return response.send(val);
+                }
+            };
+            MapBuilder::new()
+                .insert_str("stopName",
+                            stopobj["commonName"].as_str().expect("commonName"))
+                .insert_str("stopNumber", "".to_string())
+                .insert_str("when", time::now().strftime("%H:%M").expect("time.now"))
+                .build()
         } else {
             let last_item = member_slice[0].clone();
             let sorted_members = members.sorted_by(|a, b| {
