@@ -36,6 +36,16 @@
 	</script>
 	<input type="submit" value="Nearby stops" onClick="javascript:getLocation();" />
 </form>
+<h2>Favourites</h2>
+<ul>
+{{#favourites}}
+<li><a href="/arrivals/{{key}}">{{value}}</a></li>
+{{/favourites}}
+</ul>
+{{^favourites}}
+No favourites yet<br /><br />
+{{/favourites}}
+<a href="/favourites">Edit favourites</a><br />
 <hr />
 Powered by TfL Open Data<br />
 Contains OS data &copy; Crown copyright and database rights 2016<br />

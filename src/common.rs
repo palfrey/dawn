@@ -3,6 +3,10 @@ use json;
 use std::io::Read;
 use mustache;
 use nickel::{Response, MiddlewareResult, MediaType};
+use hyper::server::request;
+use hyper::header::Cookie;
+use std::ops::Deref;
+use mustache::MapBuilder;
 
 pub fn json_for_request(rb: RequestBuilder) -> Result<json::JsonValue, String> {
     let mut res = match rb.send() {
@@ -31,4 +35,36 @@ pub fn render_to_response<'a, D>(mut response: Response<'a, D>,
     template.render_data(&mut buffer, data);
     response.set(MediaType::Html);
     response.send(buffer)
+}
+
+pub static KEY: &'static str = "favourites";
+
+pub fn favourites(req: &request::Request) -> json::JsonValue {
+    let all_cookies = req.headers.get::<Cookie>().unwrap().deref();
+    let raw = all_cookies.iter().find(|k| k.name == KEY);
+    match raw {
+        Some(val) => {
+            match json::parse(&val.value) {
+                Ok(val) => val,
+                Err(_) => json::JsonValue::new_object(),  // assume junk
+            }
+        }
+        None => json::JsonValue::new_object(),
+    }
+}
+
+pub fn mustache_favourites(req: &request::Request) -> mustache::Data {
+    let favourites = favourites(req);
+    MapBuilder::new()
+        .insert_vec("favourites", |vecbuilder| {
+            let mut vecb = vecbuilder;
+            for fav in favourites.entries() {
+                vecb = vecb.push_map(|mapbuilder| {
+                    mapbuilder.insert_str("key", fav.0)
+                        .insert_str("value", fav.1)
+                });
+            }
+            vecb
+        })
+        .build()
 }

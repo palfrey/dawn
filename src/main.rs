@@ -12,7 +12,6 @@ extern crate cookie;
 
 extern crate json;
 extern crate mustache;
-use mustache::MapBuilder;
 
 extern crate itertools;
 extern crate time;
@@ -26,8 +25,10 @@ mod id;
 mod nearby;
 mod favourite;
 
-fn root_handler<'a, D>(_: &mut Request<D>, response: Response<'a, D>) -> MiddlewareResult<'a, D> {
-    let data = MapBuilder::new().build();
+fn root_handler<'a, D>(request: &mut Request<D>,
+                       response: Response<'a, D>)
+                       -> MiddlewareResult<'a, D> {
+    let data = common::mustache_favourites(&request.origin);
     common::render_to_response(response, "resources/templates/root.mustache", &data)
 }
 
