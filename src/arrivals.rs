@@ -6,11 +6,13 @@ use nickel::{Request, Response, MiddlewareResult};
 use mustache::MapBuilder;
 use time;
 use itertools::Itertools;
+use json;
 
 pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                                mut response: Response<'a, D>)
                                -> MiddlewareResult<'a, D> {
     let client = Client::new();
+    let favourites = common::favourites(&request.origin);
     let stopid = request.param("stopid").expect("Missing stopid");
     let obj =
         match common::json_for_request(
@@ -88,6 +90,7 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                     vecb
                 })
                 .insert_str("stopId", stopid)
+                .insert_bool("inFavourites", favourites[stopid] != json::JsonValue::Null)
                 .insert_str("stopName", last_item["stationName"].as_str().unwrap())
                 .insert_str("stopNumber", stop_number)
                 .insert_str("when", time::now().strftime("%H:%M").unwrap())

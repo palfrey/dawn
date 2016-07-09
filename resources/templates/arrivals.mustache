@@ -13,11 +13,19 @@ Retrieved at {{when}}<br /><br />
 {{^buses}}
 No arrivals soon<br /><br />
 {{/buses}}
+{{#inFavourites}}
+<form action="/favourite-remove" method="post" id="nearby-form">
+	<input type="hidden" name="stopid" value="{{stopId}}" />
+	<input type="submit" value="Remove from favourites" />
+</form>
+{{/inFavourites}}
+{{^inFavourites}}
 <form action="/favourites" method="post" id="nearby-form">
 	<input type="hidden" name="stopid" value="{{stopId}}" />
 	<input type="hidden" name="prettyName" value="{{stopName}} {{stopNumber}}" />
 	<input type="submit" value="Add to favourites" />
 </form>
+{{/inFavourites}}
 <a href="/">Back to front page</a>
 <hr />
 Powered by TfL Open Data<br />
