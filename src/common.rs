@@ -43,7 +43,7 @@ pub fn favourites(req: &request::Request) -> json::JsonValue {
     let raw_cookies = req.headers.get::<Cookie>();
     let all_cookies = match raw_cookies {
         Some(val) => val.deref(),
-        None => return json::JsonValue::new_object()
+        None => return json::JsonValue::new_object(),
     };
     let raw = all_cookies.iter().find(|k| k.name == KEY);
     match raw {
