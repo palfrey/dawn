@@ -22,9 +22,6 @@ pub fn id_handler<'a, D>(request: &mut Request<D>,
     };
 
     for line_group in obj["lineGroup"].members() {
-        if line_group["naptanIdReference"] == JsonValue::Null {
-            continue;
-        }
         if line_group["naptanIdReference"].as_str().unwrap_or("") == id_query {
             response.set(Location(format!("/arrivals/{}", line_group["naptanIdReference"])))
                 .set(StatusCode::MovedPermanently);
