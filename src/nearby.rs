@@ -13,7 +13,7 @@ pub fn nearby_handler<'a, D>(request: &mut Request<D>,
     let longitude = query.get("longitude").expect("Missing longitude");
     let url = &format!("https://api.tfl.gov.\
                         uk/StopPoint?lat={}&lon={}\
-                        &stopTypes=NaptanOnstreetBusCoachStopPair&radius=500",
+                        &stopTypes=NaptanPublicBusCoachTram&radius=500",
                        latitude,
                        longitude);
     let obj = match common::json_for_request(client.get(url)) {
@@ -27,18 +27,22 @@ pub fn nearby_handler<'a, D>(request: &mut Request<D>,
     let data = MapBuilder::new()
         .insert_vec("stops", |vecbuilder| {
             let mut vecb = vecbuilder;
-            for stopgroup in obj["stopPoints"].members() {
-                for stop in stopgroup["children"].members() {
-                    vecb = vecb.push_map(|mapbuilder| {
-                        let letter = match stop["stopLetter"].as_str() {
-                            Some(val) => format!(" ({})", val),
-                            None => "".to_string(),
-                        };
-                        mapbuilder.insert_str("id", stop["naptanId"].as_str().unwrap())
-                            .insert_str("stop", letter)
-                            .insert_str("name", stop["commonName"].as_str().unwrap())
-                    });
-                }
+            for stop in obj["stopPoints"].members() {
+                vecb = vecb.push_map(|mapbuilder| {
+                    let letter = match stop["stopLetter"].as_str() {
+                        Some(val) => format!(" ({})", val),
+                        None => "".to_string(),
+                    };
+                    let direction = stop["additionalProperties"]
+                        .members()
+                        .find(|p| p["key"] == "Towards")
+                        .map_or("".to_string(),
+                                |v| format!("towards {}", v["value"].as_str().unwrap_or("")));
+                    mapbuilder.insert_str("id", stop["naptanId"].as_str().unwrap())
+                        .insert_str("stop", letter)
+                        .insert_str("direction", direction)
+                        .insert_str("name", stop["commonName"].as_str().unwrap())
+                });
             }
             vecb
         })
