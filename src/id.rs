@@ -5,6 +5,7 @@ use nickel::status::StatusCode;
 use hyper::header::Location;
 use mustache::MapBuilder;
 use mustache::Data;
+use json::JsonValue;
 
 pub fn id_handler<'a, D>(request: &mut Request<D>,
                          mut response: Response<'a, D>)
@@ -21,6 +22,9 @@ pub fn id_handler<'a, D>(request: &mut Request<D>,
     };
 
     for line_group in obj["lineGroup"].members() {
+        if line_group["naptanIdReference"] == JsonValue::Null {
+            continue;
+        }
         if line_group["stationAtcoCode"].as_str().unwrap_or("") == id_query ||
            line_group["naptanIdReference"].as_str().unwrap_or("") == id_query {
             response.set(Location(format!("/arrivals/{}", line_group["naptanIdReference"])))
