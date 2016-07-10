@@ -10,8 +10,8 @@ https://dawn-stops.herokuapp.com/
 Local Setup
 -----------
 1. [Install Rust](https://www.rustup.rs/)
-2. Run app with `cargo run`
-3. Goto http://localhost:8000
+2. `cargo run`
+3. Goto [http://localhost:8000](http://localhost:8000)
 
 Heroku Setup
 ------------
