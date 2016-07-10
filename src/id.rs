@@ -28,7 +28,7 @@ pub fn id_handler<'a, D>(request: &mut Request<D>,
         if line_group["stationAtcoCode"].as_str().unwrap_or("") == id_query ||
            line_group["naptanIdReference"].as_str().unwrap_or("") == id_query {
             response.set(Location(format!("/arrivals/{}", line_group["naptanIdReference"])))
-                .set(StatusCode::PermanentRedirect);
+                .set(StatusCode::MovedPermanently);
             return response.send("");
         }
     }
@@ -75,7 +75,7 @@ pub fn id_handler<'a, D>(request: &mut Request<D>,
                 if let Data::Map(ref stop) = stops[0] {
                     if let Data::StrVal(ref id) = stop["id"] {
                         response.set(Location(format!("/id/{}", id)))
-                            .set(StatusCode::PermanentRedirect);
+                            .set(StatusCode::MovedPermanently);
                         return response.send("");
                     }
                 }

@@ -23,7 +23,7 @@ pub fn search_handler<'a, D>(request: &mut Request<D>,
     if obj["matches"].members().count() == 1 {
         let stop = obj["matches"].members().nth(0).unwrap();
         response.set(Location(format!("/id/{}", stop["id"].as_str().unwrap())))
-            .set(StatusCode::PermanentRedirect);
+            .set(StatusCode::MovedPermanently);
         return response.send("");
     }
     let data = MapBuilder::new()
