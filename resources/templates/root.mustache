@@ -22,7 +22,7 @@
 			if (navigator.geolocation) {
 				var options = {
 					enableHighAccuracy: true,
-					timeout: 5000,
+					timeout: 15000,
 					maximumAge: 5000
 				};
 				navigator.geolocation.getCurrentPosition(getPosition, positionError, options);
