@@ -2,18 +2,20 @@ use common;
 use json::iterators::Members;
 use nickel::status::StatusCode;
 use hyper::client::Client;
-use nickel::{Request, Response, MiddlewareResult};
+use nickel::{Request, Response, MiddlewareResult, QueryString};
 use mustache::MapBuilder;
 use time;
 use itertools::Itertools;
 use json;
+use std::collections::HashSet;
 
 pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                                mut response: Response<'a, D>)
                                -> MiddlewareResult<'a, D> {
     let client = Client::new();
     let favourites = common::favourites(&request.origin);
-    let stopid = request.param("stopid").expect("Missing stopid");
+    let stopid = request.param("stopid").expect("Missing stopid").to_string();
+    let line_filter = request.query().get("line");
     let obj =
         match common::json_for_request(
             client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals",
@@ -62,10 +64,16 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                 format!(" (Stop {})", platform_name)
             };
 
+            let mut lines = HashSet::new();
             MapBuilder::new()
                 .insert_vec("buses", |vecbuilder| {
                     let mut vecb = vecbuilder;
                     for stop in sorted_members.clone() {
+                        let line = stop["lineName"].as_str().unwrap();
+                        lines.insert(line);
+                        if line_filter.is_some() && line_filter.unwrap() != line {
+                            continue;
+                        }
                         vecb = vecb.push_map(|mapbuilder| {
                             let when = time::strptime(stop["expectedArrival"].as_str().unwrap(),
                                                       "%FT%TZ")
@@ -78,7 +86,7 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                             } else {
                                 "due".to_string()
                             };
-                            mapbuilder.insert_str("line", stop["lineName"].as_str().unwrap())
+                            mapbuilder.insert_str("line", line)
                                 .insert_str("destination",
                                             stop["destinationName"].as_str().unwrap())
                                 .insert_str("towards", stop["towards"].as_str().unwrap())
@@ -89,8 +97,17 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                     }
                     vecb
                 })
-                .insert_str("stopId", stopid)
-                .insert_bool("inFavourites", favourites[stopid] != json::JsonValue::Null)
+                .insert_vec("lines", |vecbuilder| {
+                    let mut vecb = vecbuilder;
+                    let mut linesv: Vec<&&str> = lines.iter().collect();
+                    linesv.sort_by_key(|k| k.parse::<i32>().unwrap_or(0));
+                    for line in linesv {
+                        vecb = vecb.push_map(|mapbuilder| mapbuilder.insert_str("line", line))
+                    }
+                    vecb
+                })
+                .insert_str("stopId", &stopid)
+                .insert_bool("inFavourites", favourites[&stopid] != json::JsonValue::Null)
                 .insert_str("stopName", last_item["stationName"].as_str().unwrap())
                 .insert_str("stopNumber", stop_number)
                 .insert_str("when", time::now().strftime("%H:%M").unwrap())

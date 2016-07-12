@@ -5,7 +5,6 @@ use nickel::status::StatusCode;
 use hyper::header::Location;
 use mustache::MapBuilder;
 use mustache::Data;
-use json::JsonValue;
 
 pub fn id_handler<'a, D>(request: &mut Request<D>,
                          mut response: Response<'a, D>)

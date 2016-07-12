@@ -5,7 +5,12 @@
 </head>
 <body>
 <h2>{{stopName}}<br />{{stopNumber}}</h2>
-Retrieved at {{when}}<br /><br />
+Retrieved at {{when}}<br />
+Only show: <a href="/arrivals/{{stopId}}">All</a>
+{{#lines}}
+<a href="/arrivals/{{stopId}}?line={{line}}">{{line}}</a>
+{{/lines}}
+<br /><br />
 {{#buses}}
 {{minutes}} ({{expectedArrival}}): <b>{{line}}</b> to <b>{{destination}}</b><br />
 {{/buses}}
