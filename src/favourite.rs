@@ -6,12 +6,31 @@ use hyper::header::{SetCookie, Location};
 use cookie::Cookie as CookiePair;
 use mustache::MapBuilder;
 use common;
+use time;
+use std::collections::BTreeMap;
+use json;
 
 fn get_from_post(parse: &mut form_urlencoded::Parse, key: &str) -> Result<String, String> {
     match parse.find(|k| k.0 == key) {
         Some((_, value)) => Ok(value.into_owned()),
         None => Err("No URL in request".to_string()),
     }
+}
+
+fn set_cookie<'a, D>(mut response: &mut Response<'a, D>, existing: json::JsonValue) {
+    response.set(SetCookie(vec![CookiePair {
+                                    name: common::KEY.to_owned(),
+                                    value: existing.dump(),
+                                    path: None,
+                                    expires: Some(time::now() + time::Duration::days(365)),
+                                    max_age: None,
+                                    secure: false,
+                                    httponly: false,
+                                    domain: None,
+                                    custom: BTreeMap::new(),
+                                }]));
+    response.set(Location("/favourites".to_string()))
+        .set(StatusCode::Found);
 }
 
 pub fn add_favourite<'a, D>(request: &mut Request<D>,
@@ -25,9 +44,7 @@ pub fn add_favourite<'a, D>(request: &mut Request<D>,
     let stopid = get_from_post(parse, "stopid");
     let pretty_name = get_from_post(parse, "prettyName");
     existing[stopid.unwrap()] = pretty_name.unwrap().into();
-    response.set(SetCookie(vec![CookiePair::new(common::KEY.to_owned(), existing.dump())]));
-    response.set(Location("/favourites".to_string()))
-        .set(StatusCode::Found);
+    set_cookie(&mut response, existing);
     return response.send("");
 }
 
@@ -41,9 +58,7 @@ pub fn remove_favourite<'a, D>(request: &mut Request<D>,
     let parse = &mut form_urlencoded::parse(buffer.as_bytes());
     let stopid = get_from_post(parse, "stopid");
     existing.remove(&stopid.unwrap());
-    response.set(SetCookie(vec![CookiePair::new(common::KEY.to_owned(), existing.dump())]));
-    response.set(Location("/favourites".to_string()))
-        .set(StatusCode::Found);
+    set_cookie(&mut response, existing);
     return response.send("");
 }
 
