@@ -50,7 +50,7 @@ pub fn id_handler<'a, D>(request: &mut Request<D>,
                     vecb = vecb.push_map(|mapbuilder| {
                         let platform_name = val["platformName"].as_str().unwrap();
                         let stop_number = if platform_name == "null" {
-                            "".to_string()
+                            format!(" towards {}", val["destinationName"].as_str().unwrap())
                         } else {
                             format!(" (Stop {})", platform_name)
                         };

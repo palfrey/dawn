@@ -59,7 +59,7 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
             });
             let platform_name = last_item["platformName"].as_str().unwrap();
             let stop_number = if platform_name == "null" {
-                "".to_string()
+                format!(" towards {}", last_item["destinationName"].as_str().unwrap())
             } else {
                 format!(" (Stop {})", platform_name)
             };
