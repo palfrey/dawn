@@ -55,11 +55,11 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
         } else {
             let last_item = member_slice[0].clone();
             let sorted_members = members.sorted_by(|a, b| {
-                a["expectedArrival"].as_str().unwrap().cmp(b["expectedArrival"].as_str().unwrap())
+                a["expectedArrival"].as_str().expect("expectedArrival a").cmp(b["expectedArrival"].as_str().expect("expectedArrival a"))
             });
-            let platform_name = last_item["platformName"].as_str().unwrap();
+            let platform_name = last_item["platformName"].as_str().expect("platformName");
             let stop_number = if platform_name == "null" {
-                format!(" towards {}", last_item["destinationName"].as_str().unwrap())
+                format!(" towards {}", last_item["destinationName"].as_str().expect("destinationName"))
             } else {
                 format!(" (Stop {})", platform_name)
             };
@@ -69,15 +69,15 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                 .insert_vec("buses", |vecbuilder| {
                     let mut vecb = vecbuilder;
                     for stop in sorted_members.clone() {
-                        let line = stop["lineName"].as_str().unwrap();
+                        let line = stop["lineName"].as_str().expect("lineName");
                         lines.insert(line);
-                        if line_filter.is_some() && line_filter.unwrap() != line {
+                        if line_filter.is_some() && line_filter.expect("line filter") != line {
                             continue;
                         }
                         vecb = vecb.push_map(|mapbuilder| {
-                            let when = time::strptime(stop["expectedArrival"].as_str().unwrap(),
-                                                      "%FT%TZ")
-                                .unwrap();
+                            let expected_arrival = stop["expectedArrival"].as_str().expect("expectedArrival");
+                            let when = time::strptime(expected_arrival, "%FT%TZ")
+                                .expect(&format!("strptime: {}", expected_arrival));
                             let until = (when - time::now()).num_minutes();
                             let until_text = if until == 1 {
                                 "1 minute".to_string()
@@ -88,11 +88,11 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                             };
                             mapbuilder.insert_str("line", line)
                                 .insert_str("destination",
-                                            stop["destinationName"].as_str().unwrap())
-                                .insert_str("towards", stop["towards"].as_str().unwrap())
+                                            stop["destinationName"].as_str().expect("destinationName"))
+                                .insert_str("towards", stop["towards"].as_str().expect("towards"))
                                 .insert_str("minutes", until_text)
                                 .insert_str("expectedArrival",
-                                            when.to_local().strftime("%H:%M").unwrap())
+                                            when.to_local().strftime("%H:%M").expect("when"))
                         });
                     }
                     vecb
@@ -108,9 +108,9 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                 })
                 .insert_str("stopId", &stopid)
                 .insert_bool("inFavourites", favourites[&stopid] != json::JsonValue::Null)
-                .insert_str("stopName", last_item["stationName"].as_str().unwrap())
+                .insert_str("stopName", last_item["stationName"].as_str().expect("stationName"))
                 .insert_str("stopNumber", stop_number)
-                .insert_str("when", time::now().strftime("%H:%M").unwrap())
+                .insert_str("when", time::now().strftime("%H:%M").expect("time now"))
                 .build()
         }
     };
