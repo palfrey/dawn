@@ -76,7 +76,7 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                         }
                         vecb = vecb.push_map(|mapbuilder| {
                             let expected_arrival = stop["expectedArrival"].as_str().expect("expectedArrival");
-                            let when = time::strptime(expected_arrival, "%FT%TZ")
+                            let when = time::strptime(expected_arrival, "%FT%T.%fZ")
                                 .expect(&format!("strptime: {}", expected_arrival));
                             let until = (when - time::now()).num_minutes();
                             let until_text = if until == 1 {
