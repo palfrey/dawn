@@ -20,14 +20,6 @@ pub fn id_handler<'a, D>(request: &mut Request<D>,
         }
     };
 
-    for line_group in obj["lineGroup"].members() {
-        if line_group["naptanIdReference"].as_str().unwrap_or("") == id_query {
-            response.set(Location(format!("/arrivals/{}", line_group["naptanIdReference"])))
-                .set(StatusCode::MovedPermanently);
-            return response.send("");
-        }
-    }
-
     let data = MapBuilder::new()
         .insert_vec("stops", |vecbuilder| {
             let mut vecb = vecbuilder;
@@ -69,7 +61,7 @@ pub fn id_handler<'a, D>(request: &mut Request<D>,
             if stops.len() == 1 {
                 if let Data::Map(ref stop) = stops[0] {
                     if let Data::StrVal(ref id) = stop["id"] {
-                        response.set(Location(format!("/id/{}", id)))
+                        response.set(Location(format!("/arrivals/{}", id)))
                             .set(StatusCode::MovedPermanently);
                         return response.send("");
                     }
