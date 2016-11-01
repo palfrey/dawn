@@ -1,14 +1,13 @@
-use nickel::{Request, Response, MiddlewareResult};
-use hyper::client::Client;
-use common;
-use nickel::status::StatusCode;
-use hyper::header::Location;
-use mustache::MapBuilder;
-use mustache::Data;
 
-pub fn id_handler<'a, D>(request: &mut Request<D>,
-                         mut response: Response<'a, D>)
-                         -> MiddlewareResult<'a, D> {
+use common;
+use hyper::client::Client;
+use hyper::header::Location;
+use mustache::Data;
+use mustache::MapBuilder;
+use nickel::{Request, Response, MiddlewareResult};
+use nickel::status::StatusCode;
+
+pub fn id_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>) -> MiddlewareResult<'a, D> {
     let client = Client::new();
     let id_query = request.param("id").expect("Missing id");
     let url = &format!("https://api.tfl.gov.uk/StopPoint/{}", id_query);

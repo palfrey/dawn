@@ -25,9 +25,7 @@ mod id;
 mod nearby;
 mod favourite;
 
-fn root_handler<'a, D>(request: &mut Request<D>,
-                       response: Response<'a, D>)
-                       -> MiddlewareResult<'a, D> {
+fn root_handler<'a, D>(request: &mut Request<D>, response: Response<'a, D>) -> MiddlewareResult<'a, D> {
     let data = common::mustache_favourites(&request.origin);
     common::render_to_response(response, "resources/templates/root.mustache", &data)
 }

@@ -1,9 +1,10 @@
-use nickel::{Request, Response, MiddlewareResult, QueryString};
-use hyper::client::Client;
+
 use common;
-use mustache::MapBuilder;
-use nickel::status::StatusCode;
+use hyper::client::Client;
 use hyper::header::Location;
+use mustache::MapBuilder;
+use nickel::{Request, Response, MiddlewareResult, QueryString};
+use nickel::status::StatusCode;
 
 pub fn search_handler<'a, D>(request: &mut Request<D>,
                              mut response: Response<'a, D>)

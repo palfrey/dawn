@@ -1,8 +1,9 @@
-use hyper::client::Client;
-use nickel::{Request, Response, MiddlewareResult, QueryString};
+
 use common;
-use nickel::status::StatusCode;
+use hyper::client::Client;
 use mustache::MapBuilder;
+use nickel::{Request, Response, MiddlewareResult, QueryString};
+use nickel::status::StatusCode;
 
 pub fn nearby_handler<'a, D>(request: &mut Request<D>,
                              mut response: Response<'a, D>)

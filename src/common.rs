@@ -1,12 +1,12 @@
 use hyper::client::RequestBuilder;
-use json;
-use std::io::Read;
-use mustache;
-use nickel::{Response, MiddlewareResult, MediaType};
-use hyper::server::request;
 use hyper::header::Cookie;
-use std::ops::Deref;
+use hyper::server::request;
+use json;
+use mustache;
 use mustache::MapBuilder;
+use nickel::{Response, MiddlewareResult, MediaType};
+use std::io::Read;
+use std::ops::Deref;
 
 pub fn json_for_request(rb: RequestBuilder) -> Result<json::JsonValue, String> {
     let mut res = match rb.send() {

@@ -1,14 +1,15 @@
-use nickel::{Request, Response, MiddlewareResult};
-use url::form_urlencoded;
-use std::io::Read;
-use nickel::status::StatusCode;
-use hyper::header::{SetCookie, Location};
-use cookie::Cookie as CookiePair;
-use mustache::MapBuilder;
+
 use common;
-use time;
-use std::collections::BTreeMap;
+use cookie::Cookie as CookiePair;
+use hyper::header::{SetCookie, Location};
 use json;
+use mustache::MapBuilder;
+use nickel::{Request, Response, MiddlewareResult};
+use nickel::status::StatusCode;
+use std::collections::BTreeMap;
+use std::io::Read;
+use time;
+use url::form_urlencoded;
 
 fn get_from_post(parse: &mut form_urlencoded::Parse, key: &str) -> Result<String, String> {
     match parse.find(|k| k.0 == key) {
