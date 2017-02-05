@@ -1,4 +1,3 @@
-
 use common;
 use cookie::Cookie as CookiePair;
 use hyper::header::{SetCookie, Location};

@@ -1,4 +1,3 @@
-
 use common;
 use hyper::client::Client;
 use hyper::header::Location;
