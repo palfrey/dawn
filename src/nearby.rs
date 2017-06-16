@@ -1,4 +1,5 @@
 use common;
+use htmlescape;
 use hyper::client::Client;
 use mustache::MapBuilder;
 use nickel::{Request, Response, MiddlewareResult, QueryString};
@@ -38,10 +39,13 @@ pub fn nearby_handler<'a, D>(request: &mut Request<D>,
                         .find(|p| p["key"] == "Towards")
                         .map_or("".to_string(),
                                 |v| format!("towards {}", v["value"].as_str().unwrap_or("")));
+                    let name = stop["commonName"].as_str().unwrap();
                     mapbuilder.insert_str("id", stop["naptanId"].as_str().unwrap())
-                        .insert_str("stop", letter)
                         .insert_str("direction", direction)
-                        .insert_str("name", stop["commonName"].as_str().unwrap())
+                        .insert_str("name", name)
+                        .insert_str("escaped_name",
+                                    htmlescape::encode_minimal(&format!("{}{}", name, letter)))
+                        .insert_str("stop", letter)
                 });
             }
             vecb

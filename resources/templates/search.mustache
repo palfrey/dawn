@@ -7,7 +7,7 @@
 <h2>Search: {{query}}</h2>
 <ul>
 {{#stops}}
-<li><a href="/id/{{id}}">{{name}}{{stop}}</a> {{direction}}</li>
+<li><a href="/id/{{id}}?name={{escaped_name}}">{{name}}{{stop}}</a> {{direction}}</li>
 {{/stops}}
 </ul>
 {{^stops}}

@@ -11,8 +11,8 @@ use std::ops::Deref;
 pub fn json_for_request(rb: RequestBuilder) -> Result<json::JsonValue, String> {
     let mut res = match rb.send() {
         Ok(val) => val,
-        Err(_) => {
-            return Err("Can't connect to TfL".to_string());
+        Err(err) => {
+            return Err(format!("Can't connect to TfL: {}", err));
         }
     };
     let mut buffer: String = String::new();
@@ -64,9 +64,8 @@ pub fn mustache_favourites(req: &request::Request) -> mustache::Data {
             let mut vecb = vecbuilder;
             for fav in favourites.entries() {
                 vecb = vecb.push_map(|mapbuilder| {
-                    mapbuilder.insert_str("key", fav.0)
-                        .insert_str("value", fav.1)
-                });
+                                         mapbuilder.insert_str("key", fav.0).insert_str("value", fav.1)
+                                     });
             }
             vecb
         })

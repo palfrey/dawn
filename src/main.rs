@@ -12,6 +12,7 @@ extern crate cookie;
 
 extern crate json;
 extern crate mustache;
+extern crate htmlescape;
 
 extern crate itertools;
 extern crate time;
@@ -53,10 +54,10 @@ fn main() {
     let mut handles = Vec::new();
     for iface in get_if_addrs::get_if_addrs().unwrap() {
         handles.push(::std::thread::spawn(move || {
-            let ip = iface.ip();
-            info!("Listening on {}:{} for {}", ip, port, iface.name);
-            run(ip, port);
-        }));
+                                              let ip = iface.ip();
+                                              info!("Listening on {}:{} for {}", ip, port, iface.name);
+                                              run(ip, port);
+                                          }));
     }
 
     info!("All listeners spawned");

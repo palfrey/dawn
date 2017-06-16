@@ -1,4 +1,5 @@
 use common;
+use htmlescape;
 use hyper::client::Client;
 use hyper::header::Location;
 use mustache::MapBuilder;
@@ -31,9 +32,11 @@ pub fn search_handler<'a, D>(request: &mut Request<D>,
             let mut vecb = vecbuilder;
             for stop in obj["matches"].members() {
                 vecb = vecb.push_map(|mapbuilder| {
-                    mapbuilder.insert_str("id", stop["id"].as_str().unwrap())
-                        .insert_str("name", stop["name"].as_str().unwrap())
-                });
+                                         let name = stop["name"].as_str().unwrap();
+                                         mapbuilder.insert_str("id", stop["id"].as_str().unwrap())
+                                             .insert_str("name", name)
+                                             .insert_str("escaped_name", htmlescape::encode_minimal(name))
+                                     });
             }
             vecb
         })
