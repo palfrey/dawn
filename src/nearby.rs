@@ -1,5 +1,4 @@
 use common;
-use htmlescape;
 use hyper::client::Client;
 use mustache::MapBuilder;
 use nickel::{Request, Response, MiddlewareResult, QueryString};
@@ -44,7 +43,7 @@ pub fn nearby_handler<'a, D>(request: &mut Request<D>,
                         .insert_str("direction", direction)
                         .insert_str("name", name)
                         .insert_str("escaped_name",
-                                    htmlescape::encode_minimal(&format!("{}{}", name, letter)))
+                                    common::query_encode(&format!("{}{}", name, letter)))
                         .insert_str("stop", letter)
                 });
             }

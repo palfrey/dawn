@@ -4,7 +4,6 @@ version = "0.1.0"
 dependencies = [
  "cookie 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "get_if_addrs 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "htmlescape 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "itertools 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "json 0.8.7 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -104,11 +103,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "log 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
-
-[[package]]
-name = "htmlescape"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "httparse"
@@ -647,7 +641,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum get_if_addrs 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "16ded284f5ef9a7560a3488fd0fbc81ec931c373823d9f9b32336055763f4821"
 "checksum groupable 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "32619942b8be646939eaf3db0602b39f5229b74575b67efc897811ded1db4e57"
 "checksum hpack 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3d2da7d3a34cf6406d9d700111b8eafafe9a251de41ae71d8052748259343b58"
-"checksum htmlescape 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "e9025058dae765dee5070ec375f591e2ba14638c63feff74f13805a72e523163"
 "checksum httparse 1.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "46534074dbb80b070d60a5cb8ecadd8963a00a438ae1a95268850a7ef73b67ae"
 "checksum humantime 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)" = "6629498cf74d09ee3c5ce8358a1b7bcca486c5b60c179c8ff532f2121573df4f"
 "checksum hyper 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)" = "bb0f4d00bb781e559b6e66ae4b5479df0fdf9ab15949f52fa2f1f5de16d4cc07"

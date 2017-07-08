@@ -12,7 +12,6 @@ extern crate cookie;
 
 extern crate json;
 extern crate mustache;
-extern crate htmlescape;
 
 extern crate itertools;
 extern crate time;

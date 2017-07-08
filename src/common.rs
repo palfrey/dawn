@@ -7,6 +7,7 @@ use mustache::MapBuilder;
 use nickel::{Response, MiddlewareResult, MediaType};
 use std::io::Read;
 use std::ops::Deref;
+use url::percent_encoding;
 
 pub fn json_for_request(rb: RequestBuilder) -> Result<json::JsonValue, String> {
     let mut res = match rb.send() {
@@ -70,4 +71,8 @@ pub fn mustache_favourites(req: &request::Request) -> mustache::Data {
             vecb
         })
         .build()
+}
+
+pub fn query_encode(input: &str) -> String {
+    percent_encoding::utf8_percent_encode(input, percent_encoding::QUERY_ENCODE_SET).collect::<String>()
 }
