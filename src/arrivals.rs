@@ -1,8 +1,6 @@
 use common;
-use hyper::client::Client;
 use itertools::Itertools;
 use json;
-use json::iterators::Members;
 use mustache::MapBuilder;
 use nickel::{Request, Response, MiddlewareResult, QueryString};
 use nickel::status::StatusCode;
@@ -12,34 +10,28 @@ use time;
 pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                                mut response: Response<'a, D>)
                                -> MiddlewareResult<'a, D> {
-    let client = Client::new();
+    let client = common::hyper_client();
     let favourites = common::favourites(&request.origin);
     let stopid = request.param("stopid").expect("Missing stopid").to_string();
     let line_filter = request.query().get("line");
-    let obj =
-        match common::json_for_request(
-            client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals",
-                          stopid))) {
-            Ok(val) => val,
-            Err(val) => {
-                response.set(StatusCode::BadGateway);
-                return response.send(val);
-            }
-        };
-
-    let members = match obj.members() {
-        Members::Some(val) => val,
-        Members::None => {
+    let obj = match common::json_for_request(client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals",
+                                                       stopid))) {
+        Ok(val) => val,
+        Err(val) => {
             response.set(StatusCode::BadGateway);
-            return response.send(format!("No stops in: {:?}", obj));
+            return response.send(val);
         }
     };
+    let members = obj.members();
     let member_slice = members.as_slice();
+    if member_slice.is_empty() {
+        response.set(StatusCode::BadGateway);
+        return response.send(format!("No stops in: {:?}", obj));
+    }
     let data = {
         if member_slice.len() == 0 {
-            let stopobj = match common::json_for_request(
-                client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}",
-                              stopid))) {
+            let stopobj = match common::json_for_request(client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}",
+                                                               stopid))) {
                 Ok(val) => val,
                 Err(val) => {
                     response.set(StatusCode::BadGateway);
@@ -55,11 +47,11 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
         } else {
             let last_item = member_slice[0].clone();
             let sorted_members = members.sorted_by(|a, b| {
-                a["expectedArrival"]
+                                                       a["expectedArrival"]
                     .as_str()
                     .expect("expectedArrival a")
                     .cmp(b["expectedArrival"].as_str().expect("expectedArrival a"))
-            });
+                                                   });
             let platform_name = last_item["platformName"].as_str().expect("platformName");
             let stop_number = if platform_name == "null" {
                 format!(" towards {}",
@@ -92,9 +84,7 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                             };
                             mapbuilder.insert_str("line", line)
                                 .insert_str("destination",
-                                            stop["destinationName"]
-                                                .as_str()
-                                                .expect("destinationName"))
+                                            stop["destinationName"].as_str().expect("destinationName"))
                                 .insert_str("towards", stop["towards"].as_str().expect("towards"))
                                 .insert_str("minutes", until_text)
                                 .insert_str("expectedArrival",

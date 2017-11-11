@@ -1,5 +1,4 @@
 use common;
-use hyper::client::Client;
 use hyper::header::Location;
 use mustache::MapBuilder;
 use nickel::{Request, Response, MiddlewareResult, QueryString};
@@ -8,7 +7,7 @@ use nickel::status::StatusCode;
 pub fn search_handler<'a, D>(request: &mut Request<D>,
                              mut response: Response<'a, D>)
                              -> MiddlewareResult<'a, D> {
-    let client = Client::new();
+    let client = common::hyper_client();
     let query = request.query().get("query").expect("Missing query");
     let url = &format!("https://api.tfl.gov.uk/StopPoint/Search/{}?modes=bus,replacement-bus",
                        query);

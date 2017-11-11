@@ -2,9 +2,9 @@
 extern crate log;
 extern crate log4rs;
 extern crate hyper;
+extern crate hyper_native_tls;
 extern crate get_if_addrs;
 
-#[macro_use]
 extern crate nickel;
 use nickel::{Nickel, HttpRouter, Request, Response, MiddlewareResult};
 extern crate url;
@@ -44,7 +44,7 @@ fn run(ip: std::net::IpAddr, port: u16) {
     router.get("/arrivals/:stopid", arrivals::arrivals_handler);
 
     server.utilize(router);
-    server.listen((ip, port));
+    server.listen((ip, port)).unwrap();
 }
 
 fn main() {

@@ -5,7 +5,6 @@ use json;
 use mustache::MapBuilder;
 use nickel::{Request, Response, MiddlewareResult};
 use nickel::status::StatusCode;
-use std::collections::BTreeMap;
 use std::io::Read;
 use time;
 use url::form_urlencoded;
@@ -17,20 +16,14 @@ fn get_from_post(parse: &mut form_urlencoded::Parse, key: &str) -> Result<String
     }
 }
 
-fn set_cookie<'a, D>(mut response: &mut Response<'a, D>, existing: json::JsonValue) {
-    response.set(SetCookie(vec![CookiePair {
-                                    name: common::KEY.to_owned(),
-                                    value: existing.dump(),
-                                    path: None,
-                                    expires: Some(time::now() + time::Duration::days(365)),
-                                    max_age: None,
-                                    secure: false,
-                                    httponly: false,
-                                    domain: None,
-                                    custom: BTreeMap::new(),
-                                }]));
-    response.set(Location("/favourites".to_string()))
-        .set(StatusCode::Found);
+fn set_cookie<'a, D>(response: &mut Response<'a, D>, existing: json::JsonValue) {
+    response.set(SetCookie(vec![CookiePair::build(common::KEY, existing.dump())
+                                    .expires(time::now() + time::Duration::days(365))
+                                    .secure(false)
+                                    .http_only(false)
+                                    .finish()
+                                    .to_string()]));
+    response.set(Location("/favourites".to_string())).set(StatusCode::Found);
 }
 
 pub fn add_favourite<'a, D>(request: &mut Request<D>,
@@ -71,9 +64,8 @@ pub fn list_favourites<'a, D>(request: &mut Request<D>,
             let mut vecb = vecbuilder;
             for fav in favourites.entries() {
                 vecb = vecb.push_map(|mapbuilder| {
-                    mapbuilder.insert_str("key", fav.0)
-                        .insert_str("value", fav.1)
-                });
+                                         mapbuilder.insert_str("key", fav.0).insert_str("value", fav.1)
+                                     });
             }
             vecb
         })
