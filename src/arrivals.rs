@@ -2,7 +2,6 @@ use common;
 use hyper::client::Client;
 use itertools::Itertools;
 use json;
-use json::iterators::Members;
 use mustache::MapBuilder;
 use nickel::{Request, Response, MiddlewareResult, QueryString};
 use nickel::status::StatusCode;
@@ -26,15 +25,12 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                 return response.send(val);
             }
         };
-
-    let members = match obj.members() {
-        Members::Some(val) => val,
-        Members::None => {
+    let members = obj.members();
+    let member_slice = members.as_slice();
+    if member_slice.is_empty() {
             response.set(StatusCode::BadGateway);
             return response.send(format!("No stops in: {:?}", obj));
-        }
-    };
-    let member_slice = members.as_slice();
+    }
     let data = {
         if member_slice.len() == 0 {
             let stopobj = match common::json_for_request(

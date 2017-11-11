@@ -1,5 +1,6 @@
 use hyper::client::RequestBuilder;
-use hyper::header::Cookie;
+use hyper::header;
+use cookie::Cookie;
 use hyper::server::request;
 use json;
 use mustache;
@@ -33,7 +34,7 @@ pub fn render_to_response<'a, D>(mut response: Response<'a, D>,
                                  -> MiddlewareResult<'a, D> {
     let template = mustache::compile_path(path).expect("working template");
     let mut buffer: Vec<u8> = vec![];
-    template.render_data(&mut buffer, data);
+    template.render_data(&mut buffer, data).unwrap();
     response.set(MediaType::Html);
     response.send(buffer)
 }
@@ -41,15 +42,15 @@ pub fn render_to_response<'a, D>(mut response: Response<'a, D>,
 pub static KEY: &'static str = "favourites";
 
 pub fn favourites(req: &request::Request) -> json::JsonValue {
-    let raw_cookies = req.headers.get::<Cookie>();
+    let raw_cookies = req.headers.get::<header::Cookie>();
     let all_cookies = match raw_cookies {
         Some(val) => val.deref(),
         None => return json::JsonValue::new_object(),
     };
-    let raw = all_cookies.iter().find(|k| k.name == KEY);
+    let raw = all_cookies.iter().map(|c| Cookie::parse(c.deref()).unwrap()).find(|k| k.name() == KEY);
     match raw {
         Some(val) => {
-            match json::parse(&val.value) {
+            match json::parse(&val.value()) {
                 Ok(val) => val,
                 Err(_) => json::JsonValue::new_object(),  // assume junk
             }
