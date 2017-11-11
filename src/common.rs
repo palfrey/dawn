@@ -1,7 +1,10 @@
+use cookie::Cookie;
+use hyper::Client;
 use hyper::client::RequestBuilder;
 use hyper::header;
-use cookie::Cookie;
+use hyper::net::HttpsConnector;
 use hyper::server::request;
+use hyper_native_tls::NativeTlsClient;
 use json;
 use mustache;
 use mustache::MapBuilder;
@@ -9,10 +12,6 @@ use nickel::{Response, MiddlewareResult, MediaType};
 use std::io::Read;
 use std::ops::Deref;
 use url::percent_encoding;
-
-use hyper::Client;
-use hyper::net::HttpsConnector;
-use hyper_native_tls::NativeTlsClient;
 
 pub fn hyper_client() -> Client {
     let ssl = NativeTlsClient::new().unwrap();

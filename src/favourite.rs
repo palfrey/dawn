@@ -17,16 +17,13 @@ fn get_from_post(parse: &mut form_urlencoded::Parse, key: &str) -> Result<String
 }
 
 fn set_cookie<'a, D>(response: &mut Response<'a, D>, existing: json::JsonValue) {
-    response.set(SetCookie(vec![CookiePair::build(common::KEY,
-                                    existing.dump())
+    response.set(SetCookie(vec![CookiePair::build(common::KEY, existing.dump())
                                     .expires(time::now() + time::Duration::days(365))
                                     .secure(false)
                                     .http_only(false)
                                     .finish()
-                                    .to_string()
-                                ]));
-    response.set(Location("/favourites".to_string()))
-        .set(StatusCode::Found);
+                                    .to_string()]));
+    response.set(Location("/favourites".to_string())).set(StatusCode::Found);
 }
 
 pub fn add_favourite<'a, D>(request: &mut Request<D>,
@@ -67,9 +64,8 @@ pub fn list_favourites<'a, D>(request: &mut Request<D>,
             let mut vecb = vecbuilder;
             for fav in favourites.entries() {
                 vecb = vecb.push_map(|mapbuilder| {
-                    mapbuilder.insert_str("key", fav.0)
-                        .insert_str("value", fav.1)
-                });
+                                         mapbuilder.insert_str("key", fav.0).insert_str("value", fav.1)
+                                     });
             }
             vecb
         })
