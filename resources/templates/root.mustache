@@ -20,11 +20,20 @@
 			event.preventDefault();
 			var info = document.getElementById("info");
 			if (navigator.geolocation) {
-				var options = {
-					enableHighAccuracy: true,
-					timeout: 15000,
-					maximumAge: 5000
-				};
+				var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+				if (isFirefox) {
+					var options = {
+						maximumAge: Infinity,
+						timeout: 0
+					}
+				}
+				else {
+					var options = {
+						enableHighAccuracy: true,
+						timeout: 15000,
+						maximumAge: 5000
+					};
+				}
 				navigator.geolocation.getCurrentPosition(getPosition, positionError, options);
 				info.innerHTML = "Getting location...";
 			} else {
