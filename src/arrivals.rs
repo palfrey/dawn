@@ -1,5 +1,4 @@
 use common;
-use hyper::client::Client;
 use itertools::Itertools;
 use json;
 use mustache::MapBuilder;
@@ -11,7 +10,7 @@ use time;
 pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                                mut response: Response<'a, D>)
                                -> MiddlewareResult<'a, D> {
-    let client = Client::new();
+    let client = common::hyper_client();
     let favourites = common::favourites(&request.origin);
     let stopid = request.param("stopid").expect("Missing stopid").to_string();
     let line_filter = request.query().get("line");

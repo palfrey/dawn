@@ -2,6 +2,7 @@
 extern crate log;
 extern crate log4rs;
 extern crate hyper;
+extern crate hyper_native_tls;
 extern crate get_if_addrs;
 
 extern crate nickel;

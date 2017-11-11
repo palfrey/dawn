@@ -1,5 +1,4 @@
 use common;
-use hyper::client::Client;
 use mustache::MapBuilder;
 use nickel::{Request, Response, MiddlewareResult, QueryString};
 use nickel::status::StatusCode;
@@ -7,7 +6,7 @@ use nickel::status::StatusCode;
 pub fn nearby_handler<'a, D>(request: &mut Request<D>,
                              mut response: Response<'a, D>)
                              -> MiddlewareResult<'a, D> {
-    let client = Client::new();
+    let client = common::hyper_client();
     let query = request.query();
     let latitude = query.get("latitude").expect("Missing latitude");
     let longitude = query.get("longitude").expect("Missing longitude");

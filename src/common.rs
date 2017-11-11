@@ -10,6 +10,16 @@ use std::io::Read;
 use std::ops::Deref;
 use url::percent_encoding;
 
+use hyper::Client;
+use hyper::net::HttpsConnector;
+use hyper_native_tls::NativeTlsClient;
+
+pub fn hyper_client() -> Client {
+    let ssl = NativeTlsClient::new().unwrap();
+    let connector = HttpsConnector::new(ssl);
+    return Client::with_connector(connector);
+}
+
 pub fn json_for_request(rb: RequestBuilder) -> Result<json::JsonValue, String> {
     let mut res = match rb.send() {
         Ok(val) => val,
