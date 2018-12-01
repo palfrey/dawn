@@ -4,9 +4,8 @@ version = "0.1.0"
 authors = ["Tom Parker <palfrey@tevp.net>"]
 
 [dependencies]
-nickel = "^0.10"
-hyper = "^0.10"
-hyper-native-tls = "0.2.4"
+actix-web = "0.7"
+hyper = "0.12"
 url = "*"
 log = "*"
 json = "*"
@@ -16,3 +15,6 @@ itertools = "*"
 time = "*"
 get_if_addrs = "*"
 cookie = "*"
+serde = "1.0"
+serde_derive = "1.0"
+reqwest = "0.9"
