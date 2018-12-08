@@ -8,14 +8,17 @@ extern crate log4rs;
 #[macro_use]
 extern crate log;
 extern crate mustache;
-extern crate reqwest;
+extern crate reqwest_mock;
 #[macro_use]
 extern crate serde_derive;
 extern crate time;
 extern crate url;
+#[macro_use]
+extern crate lazy_static;
 
-use actix_web::{http::Method, server, App, HttpRequest, HttpResponse};
+use actix_web::{http::Method, server, App, HttpRequest, HttpResponse, test, http, HttpMessage};
 use std::env;
+use hyper::rt::Future;
 
 mod arrivals;
 mod common;
@@ -54,4 +57,15 @@ fn main() {
         server = server.bind((ip, port)).unwrap();
     }
     server.run();
+}
+
+#[test]
+fn simple_search() {
+    let mut srv = test::TestServer::with_factory(app);
+    common::set_client(common::ClientType::TESTING);
+    let request = srv.client(
+         http::Method::GET, "/search?query=foo").finish().unwrap();
+    let response = srv.execute(request.send()).unwrap();
+    assert_eq!(response.body().wait().unwrap(), "");
+    assert!(response.status().is_success());
 }
