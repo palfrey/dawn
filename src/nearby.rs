@@ -42,11 +42,13 @@ pub fn nearby_handler(request: HttpRequest) -> HttpResponse {
                         .insert_str(
                             "escaped_name",
                             common::query_encode(&format!("{}{}", name, letter)),
-                        ).insert_str("stop", letter)
+                        )
+                        .insert_str("stop", letter)
                 });
             }
             vecb
-        }).insert_str("query", "Nearby stops")
+        })
+        .insert_str("query", "Nearby stops")
         .build();
     common::render_to_response("resources/templates/search.mustache", &data)
 }

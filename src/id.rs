@@ -65,7 +65,8 @@ pub fn id_handler((path, query): (Path<(String,)>, Query<IdQuery>)) -> HttpRespo
                 }
             }
             vecb
-        }).insert_str("query", obj["commonName"].as_str().unwrap())
+        })
+        .insert_str("query", obj["commonName"].as_str().unwrap())
         .build();
     if early_quit {
         return response.body("");

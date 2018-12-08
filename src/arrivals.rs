@@ -92,7 +92,8 @@ pub fn arrivals_handler(
                                 .insert_str(
                                     "destination",
                                     stop["destinationName"].as_str().expect("destinationName"),
-                                ).insert_str("towards", stop["towards"].as_str().expect("towards"))
+                                )
+                                .insert_str("towards", stop["towards"].as_str().expect("towards"))
                                 .insert_str("minutes", until_text)
                                 .insert_str(
                                     "expectedArrival",
@@ -101,7 +102,8 @@ pub fn arrivals_handler(
                         });
                     }
                     vecb
-                }).insert_vec("lines", |vecbuilder| {
+                })
+                .insert_vec("lines", |vecbuilder| {
                     let mut vecb = vecbuilder;
                     let mut linesv: Vec<&&str> = lines.iter().collect();
                     linesv.sort_by_key(|k| k.parse::<i32>().unwrap_or(0));
@@ -109,12 +111,14 @@ pub fn arrivals_handler(
                         vecb = vecb.push_map(|mapbuilder| mapbuilder.insert_str("line", line))
                     }
                     vecb
-                }).insert_str("stopId", stopid)
+                })
+                .insert_str("stopId", stopid)
                 .insert_bool("inFavourites", favourites[stopid] != json::JsonValue::Null)
                 .insert_str(
                     "stopName",
                     last_item["stationName"].as_str().expect("stationName"),
-                ).insert_str("stopNumber", stop_number)
+                )
+                .insert_str("stopNumber", stop_number)
                 .insert_str("when", time::now().strftime("%H:%M").expect("time now"))
                 .build()
         }

@@ -42,7 +42,8 @@ pub fn search_handler(request: Query<SearchQuery>) -> HttpResponse {
                 });
             }
             vecb
-        }).insert_str("query", &request.query)
+        })
+        .insert_str("query", &request.query)
         .build();
     common::render_to_response("resources/templates/search.mustache", &data)
 }

@@ -57,7 +57,8 @@ pub fn mustache_favourites(req: &HttpRequest) -> mustache::Data {
                     .push_map(|mapbuilder| mapbuilder.insert_str("key", fav.0).insert_str("value", fav.1));
             }
             vecb
-        }).build()
+        })
+        .build()
 }
 
 pub fn query_encode(input: &str) -> String {

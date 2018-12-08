@@ -58,6 +58,7 @@ pub fn list_favourites(request: HttpRequest) -> HttpResponse {
                     .push_map(|mapbuilder| mapbuilder.insert_str("key", fav.0).insert_str("value", fav.1));
             }
             vecb
-        }).build();
+        })
+        .build();
     common::render_to_response("resources/templates/favourites.mustache", &data)
 }
