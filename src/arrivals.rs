@@ -1,44 +1,44 @@
+use actix_web::{http::StatusCode, HttpRequest, HttpResponse, Path, Query};
 use common;
 use itertools::Itertools;
 use json;
 use mustache::MapBuilder;
-use nickel::status::StatusCode;
-use nickel::{MiddlewareResult, QueryString, Request, Response};
 use std::collections::HashSet;
 use time;
 
-pub fn arrivals_handler<'a, D>(
-    request: &mut Request<D>,
-    mut response: Response<'a, D>,
-) -> MiddlewareResult<'a, D> {
-    let client = common::hyper_client();
-    let favourites = common::favourites(&request.origin);
-    let stopid = request.param("stopid").expect("Missing stopid").to_string();
-    let line_filter = request.query().get("line");
-    let obj = match common::json_for_request(
-        client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals", stopid)),
-    ) {
+#[derive(Deserialize)]
+pub struct ArrivalsQuery {
+    line: Option<String>,
+}
+
+pub fn arrivals_handler(
+    (req, path, query): (HttpRequest, Path<(String,)>, Query<ArrivalsQuery>),
+) -> HttpResponse {
+    let favourites = common::favourites(&req);
+    let stopid = &path.0;
+    let line_filter = &query.line;
+    let mut response = HttpResponse::Ok();
+    let obj = match common::json_for_url(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals", stopid)) {
         Ok(val) => val,
         Err(val) => {
-            response.set(StatusCode::BadGateway);
-            return response.send(val);
+            response.status(StatusCode::BAD_GATEWAY);
+            return response.body(val);
         }
     };
     let members = obj.members();
     let member_slice = members.as_slice();
     if member_slice.is_empty() {
-        response.set(StatusCode::BadGateway);
-        return response.send(format!("No stops in: {:?}", obj));
+        response.status(StatusCode::BAD_GATEWAY);
+        return response.body(format!("No stops in: {:?}", obj));
     }
     let data = {
         if member_slice.len() == 0 {
-            let stopobj = match common::json_for_request(
-                client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}", stopid)),
-            ) {
+            let stopobj = match common::json_for_url(&format!("https://api.tfl.gov.uk/StopPoint/{}", stopid))
+            {
                 Ok(val) => val,
                 Err(val) => {
-                    response.set(StatusCode::BadGateway);
-                    return response.send(val);
+                    response.status(StatusCode::BAD_GATEWAY);
+                    return response.body(val);
                 }
             };
             MapBuilder::new()
@@ -68,10 +68,11 @@ pub fn arrivals_handler<'a, D>(
             MapBuilder::new()
                 .insert_vec("buses", |vecbuilder| {
                     let mut vecb = vecbuilder;
+                    let lf = line_filter.clone().unwrap_or(String::from(""));
                     for stop in sorted_members.clone() {
                         let line = stop["lineName"].as_str().expect("lineName");
                         lines.insert(line);
-                        if line_filter.is_some() && line_filter.expect("line filter") != line {
+                        if lf != "" && lf != line {
                             continue;
                         }
                         vecb = vecb.push_map(|mapbuilder| {
@@ -111,8 +112,8 @@ pub fn arrivals_handler<'a, D>(
                     }
                     vecb
                 })
-                .insert_str("stopId", &stopid)
-                .insert_bool("inFavourites", favourites[&stopid] != json::JsonValue::Null)
+                .insert_str("stopId", stopid)
+                .insert_bool("inFavourites", favourites[stopid] != json::JsonValue::Null)
                 .insert_str(
                     "stopName",
                     last_item["stationName"].as_str().expect("stationName"),
@@ -123,5 +124,5 @@ pub fn arrivals_handler<'a, D>(
         }
     };
 
-    common::render_to_response(response, "resources/templates/arrivals.mustache", &data)
+    common::render_to_response("resources/templates/arrivals.mustache", &data)
 }

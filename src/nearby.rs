@@ -1,13 +1,8 @@
+use actix_web::{http::StatusCode, HttpRequest, HttpResponse};
 use common;
 use mustache::MapBuilder;
-use nickel::status::StatusCode;
-use nickel::{MiddlewareResult, QueryString, Request, Response};
 
-pub fn nearby_handler<'a, D>(
-    request: &mut Request<D>,
-    mut response: Response<'a, D>,
-) -> MiddlewareResult<'a, D> {
-    let client = common::hyper_client();
+pub fn nearby_handler(request: HttpRequest) -> HttpResponse {
     let query = request.query();
     let latitude = query.get("latitude").expect("Missing latitude");
     let longitude = query.get("longitude").expect("Missing longitude");
@@ -17,11 +12,10 @@ pub fn nearby_handler<'a, D>(
          &stopTypes=NaptanPublicBusCoachTram&radius=500",
         latitude, longitude
     );
-    let obj = match common::json_for_request(client.get(url)) {
+    let obj = match common::json_for_url(url) {
         Ok(val) => val,
         Err(val) => {
-            response.set(StatusCode::BadGateway);
-            return response.send(val);
+            return HttpResponse::Ok().status(StatusCode::BAD_GATEWAY).body(val);
         }
     };
 
@@ -56,5 +50,5 @@ pub fn nearby_handler<'a, D>(
         })
         .insert_str("query", "Nearby stops")
         .build();
-    common::render_to_response(response, "resources/templates/search.mustache", &data)
+    common::render_to_response("resources/templates/search.mustache", &data)
 }

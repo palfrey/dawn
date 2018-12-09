@@ -1,33 +1,33 @@
+use actix_web::{http::StatusCode, HttpResponse, Query};
 use common;
-use hyper::header::Location;
+use hyper::header::LOCATION;
 use mustache::MapBuilder;
-use nickel::status::StatusCode;
-use nickel::{MiddlewareResult, QueryString, Request, Response};
 
-pub fn search_handler<'a, D>(
-    request: &mut Request<D>,
-    mut response: Response<'a, D>,
-) -> MiddlewareResult<'a, D> {
-    let client = common::hyper_client();
-    let query = request.query().get("query").expect("Missing query");
+#[derive(Deserialize)]
+pub struct SearchQuery {
+    query: String,
+}
+
+pub fn search_handler(request: Query<SearchQuery>) -> HttpResponse {
     let url = &format!(
         "https://api.tfl.gov.uk/StopPoint/Search/{}?modes=bus,replacement-bus",
-        query
+        &request.query
     );
-    let obj = match common::json_for_request(client.get(url)) {
+    let obj = match common::json_for_url(url) {
         Ok(val) => val,
         Err(val) => {
-            response.set(StatusCode::BadGateway);
-            return response.send(val);
+            let mut response = HttpResponse::Ok();
+            response.status(StatusCode::BAD_GATEWAY);
+            return response.body(val);
         }
     };
 
     if obj["matches"].members().count() == 1 {
         let stop = obj["matches"].members().nth(0).unwrap();
-        response
-            .set(Location(format!("/id/{}", stop["id"].as_str().unwrap())))
-            .set(StatusCode::MovedPermanently);
-        return response.send("");
+        let mut response = HttpResponse::Ok();
+        response.header(LOCATION, format!("/id/{}", stop["id"].as_str().unwrap()));
+        response.status(StatusCode::PERMANENT_REDIRECT);
+        return response.body("");
     }
     let data = MapBuilder::new()
         .insert_vec("stops", |vecbuilder| {
@@ -43,7 +43,7 @@ pub fn search_handler<'a, D>(
             }
             vecb
         })
-        .insert_str("query", query)
+        .insert_str("query", &request.query)
         .build();
-    common::render_to_response(response, "resources/templates/search.mustache", &data)
+    common::render_to_response("resources/templates/search.mustache", &data)
 }

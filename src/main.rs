@@ -1,21 +1,20 @@
-#[macro_use]
-extern crate log;
+extern crate actix_web;
+extern crate cookie;
 extern crate get_if_addrs;
 extern crate hyper;
-extern crate hyper_native_tls;
+extern crate itertools;
+extern crate json;
 extern crate log4rs;
-
-extern crate nickel;
-use nickel::{HttpRouter, MiddlewareResult, Nickel, Request, Response};
-extern crate cookie;
+#[macro_use]
+extern crate log;
+extern crate mustache;
+extern crate reqwest;
+#[macro_use]
+extern crate serde_derive;
+extern crate time;
 extern crate url;
 
-extern crate json;
-extern crate mustache;
-
-extern crate itertools;
-extern crate time;
-
+use actix_web::{http::Method, server, App, HttpRequest, HttpResponse};
 use std::env;
 
 mod arrivals;
@@ -25,26 +24,21 @@ mod id;
 mod nearby;
 mod search;
 
-fn root_handler<'a, D>(request: &mut Request<D>, response: Response<'a, D>) -> MiddlewareResult<'a, D> {
-    let data = common::mustache_favourites(&request.origin);
-    common::render_to_response(response, "resources/templates/root.mustache", &data)
+fn root_handler(request: HttpRequest) -> HttpResponse {
+    let data = common::mustache_favourites(&request);
+    common::render_to_response("resources/templates/root.mustache", &data)
 }
 
-fn run(ip: std::net::IpAddr, port: u16) {
-    let mut server = Nickel::new();
-    let mut router = Nickel::router();
-
-    router.get("/", root_handler);
-    router.get("/search", search::search_handler);
-    router.get("/id/:id", id::id_handler);
-    router.get("/nearby", nearby::nearby_handler);
-    router.get("/favourites", favourite::list_favourites);
-    router.post("/favourites", favourite::add_favourite);
-    router.post("/favourite-remove", favourite::remove_favourite);
-    router.get("/arrivals/:stopid", arrivals::arrivals_handler);
-
-    server.utilize(router);
-    server.listen((ip, port)).unwrap();
+fn app() -> App {
+    return App::new()
+        .route("/", Method::GET, root_handler)
+        .route("/search", Method::GET, search::search_handler)
+        .route("/id/{id}", Method::GET, id::id_handler)
+        .route("/nearby", Method::GET, nearby::nearby_handler)
+        .route("/favourites", Method::GET, favourite::list_favourites)
+        .route("/favourites", Method::POST, favourite::add_favourite)
+        .route("/favourite-remove", Method::POST, favourite::remove_favourite)
+        .route("/arrivals/{stopid}", Method::GET, arrivals::arrivals_handler);
 }
 
 fn main() {
@@ -53,18 +47,11 @@ fn main() {
         .unwrap_or("8000".to_string())
         .parse::<u16>()
         .unwrap();
-    let mut handles = Vec::new();
+    let mut server = server::new(|| app().finish());
     for iface in get_if_addrs::get_if_addrs().unwrap() {
-        handles.push(::std::thread::spawn(move || {
-            let ip = iface.ip();
-            info!("Listening on {}:{} for {}", ip, port, iface.name);
-            run(ip, port);
-        }));
+        let ip = iface.ip();
+        info!("Listening on {}:{} for {}", ip, port, iface.name);
+        server = server.bind((ip, port)).unwrap();
     }
-
-    info!("All listeners spawned");
-
-    for handle in handles {
-        handle.join().unwrap();
-    }
+    server.run();
 }

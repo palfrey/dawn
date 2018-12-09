@@ -1,23 +1,24 @@
+use actix_web::{http::StatusCode, HttpResponse, Path, Query};
 use common;
-use hyper::header::Location;
+use hyper::header::LOCATION;
 use mustache::Data;
 use mustache::MapBuilder;
-use nickel::status::StatusCode;
-use nickel::{MiddlewareResult, QueryString, Request, Response};
 
-pub fn id_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>) -> MiddlewareResult<'a, D> {
-    let client = common::hyper_client();
-    let id_query = String::from(request.param("id").expect("Missing id"));
-    let url = &format!("https://api.tfl.gov.uk/StopPoint/{}", id_query);
-    let obj = match common::json_for_request(client.get(url)) {
+#[derive(Deserialize)]
+pub struct IdQuery {
+    name: Option<String>,
+}
+
+pub fn id_handler((path, query): (Path<(String,)>, Query<IdQuery>)) -> HttpResponse {
+    let obj = match common::json_for_url(&format!("https://api.tfl.gov.uk/StopPoint/{}", &path.0)) {
         Ok(val) => val,
         Err(val) => {
-            response.set(StatusCode::BadGateway);
-            return response.send(val);
+            return HttpResponse::Ok().status(StatusCode::BAD_GATEWAY).body(val);
         }
     };
 
-    let direct_name = request.query().get("name").unwrap_or("");
+    let mut response = HttpResponse::Ok();
+    let direct_name = query.name.clone().unwrap_or(String::from(""));
     let mut early_quit = false;
     let data = MapBuilder::new()
         .insert_vec("stops", |vecbuilder| {
@@ -30,10 +31,10 @@ pub fn id_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>
                 if naptan_id == "" {
                     continue;
                 }
-                let stopobj = match common::json_for_request(client.get(&format!(
+                let stopobj = match common::json_for_url(&format!(
                     "https://api.tfl.gov.uk/StopPoint/{}/Arrivals",
                     naptan_id
-                ))) {
+                )) {
                     Ok(val) => val,
                     Err(_) => continue,
                 };
@@ -47,9 +48,8 @@ pub fn id_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>
                         } else {
                             let possible_direct = format!("{} ({})", stop_name, platform_name);
                             if direct_name == possible_direct {
-                                response
-                                    .set(Location(format!("/arrivals/{}", naptan_id)))
-                                    .set(StatusCode::TemporaryRedirect);
+                                response.header(LOCATION, format!("/arrivals/{}", naptan_id));
+                                response.status(StatusCode::TEMPORARY_REDIRECT);
                                 early_quit = true;
                                 return mapbuilder;
                             }
@@ -69,21 +69,20 @@ pub fn id_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>
         .insert_str("query", obj["commonName"].as_str().unwrap())
         .build();
     if early_quit {
-        return response.send("");
+        return response.body("");
     }
     if let Data::Map(ref hash) = data {
         if let Data::VecVal(ref stops) = hash["stops"] {
             if stops.len() == 1 {
                 if let Data::Map(ref stop) = stops[0] {
                     if let Data::StrVal(ref id) = stop["id"] {
-                        response
-                            .set(Location(format!("/arrivals/{}", id)))
-                            .set(StatusCode::MovedPermanently);
-                        return response.send("");
+                        response.header(LOCATION, format!("/arrivals/{}", id));
+                        response.status(StatusCode::PERMANENT_REDIRECT);
+                        return response.body("");
                     }
                 }
             }
         }
     }
-    common::render_to_response(response, "resources/templates/multiple-id.mustache", &data)
+    common::render_to_response("resources/templates/multiple-id.mustache", &data)
 }
