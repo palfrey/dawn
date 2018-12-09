@@ -1,10 +1,10 @@
 use common;
 use cookie::Cookie as CookiePair;
-use hyper::header::{SetCookie, Location};
+use hyper::header::{Location, SetCookie};
 use json;
 use mustache::MapBuilder;
-use nickel::{Request, Response, MiddlewareResult};
 use nickel::status::StatusCode;
+use nickel::{MiddlewareResult, Request, Response};
 use std::io::Read;
 use time;
 use url::form_urlencoded;
@@ -18,17 +18,20 @@ fn get_from_post(parse: &mut form_urlencoded::Parse, key: &str) -> Result<String
 
 fn set_cookie<'a, D>(response: &mut Response<'a, D>, existing: json::JsonValue) {
     response.set(SetCookie(vec![CookiePair::build(common::KEY, existing.dump())
-                                    .expires(time::now() + time::Duration::days(365))
-                                    .secure(false)
-                                    .http_only(false)
-                                    .finish()
-                                    .to_string()]));
-    response.set(Location("/favourites".to_string())).set(StatusCode::Found);
+        .expires(time::now() + time::Duration::days(365))
+        .secure(false)
+        .http_only(false)
+        .finish()
+        .to_string()]));
+    response
+        .set(Location("/favourites".to_string()))
+        .set(StatusCode::Found);
 }
 
-pub fn add_favourite<'a, D>(request: &mut Request<D>,
-                            mut response: Response<'a, D>)
-                            -> MiddlewareResult<'a, D> {
+pub fn add_favourite<'a, D>(
+    request: &mut Request<D>,
+    mut response: Response<'a, D>,
+) -> MiddlewareResult<'a, D> {
     let ref mut original_req = request.origin;
     let mut existing = common::favourites(original_req);
     let mut buffer = String::new();
@@ -41,9 +44,10 @@ pub fn add_favourite<'a, D>(request: &mut Request<D>,
     return response.send("");
 }
 
-pub fn remove_favourite<'a, D>(request: &mut Request<D>,
-                               mut response: Response<'a, D>)
-                               -> MiddlewareResult<'a, D> {
+pub fn remove_favourite<'a, D>(
+    request: &mut Request<D>,
+    mut response: Response<'a, D>,
+) -> MiddlewareResult<'a, D> {
     let ref mut original_req = request.origin;
     let mut existing = common::favourites(original_req);
     let mut buffer = String::new();
@@ -55,17 +59,17 @@ pub fn remove_favourite<'a, D>(request: &mut Request<D>,
     return response.send("");
 }
 
-pub fn list_favourites<'a, D>(request: &mut Request<D>,
-                              response: Response<'a, D>)
-                              -> MiddlewareResult<'a, D> {
+pub fn list_favourites<'a, D>(
+    request: &mut Request<D>,
+    response: Response<'a, D>,
+) -> MiddlewareResult<'a, D> {
     let favourites = common::favourites(&request.origin);
     let data = MapBuilder::new()
         .insert_vec("favourites", |vecbuilder| {
             let mut vecb = vecbuilder;
             for fav in favourites.entries() {
-                vecb = vecb.push_map(|mapbuilder| {
-                                         mapbuilder.insert_str("key", fav.0).insert_str("value", fav.1)
-                                     });
+                vecb = vecb
+                    .push_map(|mapbuilder| mapbuilder.insert_str("key", fav.0).insert_str("value", fav.1));
             }
             vecb
         })

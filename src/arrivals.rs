@@ -2,20 +2,22 @@ use common;
 use itertools::Itertools;
 use json;
 use mustache::MapBuilder;
-use nickel::{Request, Response, MiddlewareResult, QueryString};
 use nickel::status::StatusCode;
+use nickel::{MiddlewareResult, QueryString, Request, Response};
 use std::collections::HashSet;
 use time;
 
-pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
-                               mut response: Response<'a, D>)
-                               -> MiddlewareResult<'a, D> {
+pub fn arrivals_handler<'a, D>(
+    request: &mut Request<D>,
+    mut response: Response<'a, D>,
+) -> MiddlewareResult<'a, D> {
     let client = common::hyper_client();
     let favourites = common::favourites(&request.origin);
     let stopid = request.param("stopid").expect("Missing stopid").to_string();
     let line_filter = request.query().get("line");
-    let obj = match common::json_for_request(client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals",
-                                                       stopid))) {
+    let obj = match common::json_for_request(
+        client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals", stopid)),
+    ) {
         Ok(val) => val,
         Err(val) => {
             response.set(StatusCode::BadGateway);
@@ -30,8 +32,9 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
     }
     let data = {
         if member_slice.len() == 0 {
-            let stopobj = match common::json_for_request(client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}",
-                                                               stopid))) {
+            let stopobj = match common::json_for_request(
+                client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}", stopid)),
+            ) {
                 Ok(val) => val,
                 Err(val) => {
                     response.set(StatusCode::BadGateway);
@@ -39,23 +42,24 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                 }
             };
             MapBuilder::new()
-                .insert_str("stopName",
-                            stopobj["commonName"].as_str().expect("commonName"))
+                .insert_str("stopName", stopobj["commonName"].as_str().expect("commonName"))
                 .insert_str("stopNumber", "".to_string())
                 .insert_str("when", time::now().strftime("%H:%M").expect("time.now"))
                 .build()
         } else {
             let last_item = member_slice[0].clone();
             let sorted_members = members.sorted_by(|a, b| {
-                                                       a["expectedArrival"]
+                a["expectedArrival"]
                     .as_str()
                     .expect("expectedArrival a")
                     .cmp(b["expectedArrival"].as_str().expect("expectedArrival a"))
-                                                   });
+            });
             let platform_name = last_item["platformName"].as_str().expect("platformName");
             let stop_number = if platform_name == "null" {
-                format!(" towards {}",
-                        last_item["destinationName"].as_str().expect("destinationName"))
+                format!(
+                    " towards {}",
+                    last_item["destinationName"].as_str().expect("destinationName")
+                )
             } else {
                 format!(" (Stop {})", platform_name)
             };
@@ -82,13 +86,18 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                             } else {
                                 "due".to_string()
                             };
-                            mapbuilder.insert_str("line", line)
-                                .insert_str("destination",
-                                            stop["destinationName"].as_str().expect("destinationName"))
+                            mapbuilder
+                                .insert_str("line", line)
+                                .insert_str(
+                                    "destination",
+                                    stop["destinationName"].as_str().expect("destinationName"),
+                                )
                                 .insert_str("towards", stop["towards"].as_str().expect("towards"))
                                 .insert_str("minutes", until_text)
-                                .insert_str("expectedArrival",
-                                            when.to_local().strftime("%H:%M").expect("when"))
+                                .insert_str(
+                                    "expectedArrival",
+                                    when.to_local().strftime("%H:%M").expect("when"),
+                                )
                         });
                     }
                     vecb
@@ -104,8 +113,10 @@ pub fn arrivals_handler<'a, D>(request: &mut Request<D>,
                 })
                 .insert_str("stopId", &stopid)
                 .insert_bool("inFavourites", favourites[&stopid] != json::JsonValue::Null)
-                .insert_str("stopName",
-                            last_item["stationName"].as_str().expect("stationName"))
+                .insert_str(
+                    "stopName",
+                    last_item["stationName"].as_str().expect("stationName"),
+                )
                 .insert_str("stopNumber", stop_number)
                 .insert_str("when", time::now().strftime("%H:%M").expect("time now"))
                 .build()

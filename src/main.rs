@@ -1,14 +1,14 @@
 #[macro_use]
 extern crate log;
-extern crate log4rs;
+extern crate get_if_addrs;
 extern crate hyper;
 extern crate hyper_native_tls;
-extern crate get_if_addrs;
+extern crate log4rs;
 
 extern crate nickel;
-use nickel::{Nickel, HttpRouter, Request, Response, MiddlewareResult};
-extern crate url;
+use nickel::{HttpRouter, MiddlewareResult, Nickel, Request, Response};
 extern crate cookie;
+extern crate url;
 
 extern crate json;
 extern crate mustache;
@@ -18,12 +18,12 @@ extern crate time;
 
 use std::env;
 
-mod search;
-mod common;
 mod arrivals;
+mod common;
+mod favourite;
 mod id;
 mod nearby;
-mod favourite;
+mod search;
 
 fn root_handler<'a, D>(request: &mut Request<D>, response: Response<'a, D>) -> MiddlewareResult<'a, D> {
     let data = common::mustache_favourites(&request.origin);
@@ -49,14 +49,17 @@ fn run(ip: std::net::IpAddr, port: u16) {
 
 fn main() {
     log4rs::init_file("log.yaml", Default::default()).unwrap();
-    let port = env::var("PORT").unwrap_or("8000".to_string()).parse::<u16>().unwrap();
+    let port = env::var("PORT")
+        .unwrap_or("8000".to_string())
+        .parse::<u16>()
+        .unwrap();
     let mut handles = Vec::new();
     for iface in get_if_addrs::get_if_addrs().unwrap() {
         handles.push(::std::thread::spawn(move || {
-                                              let ip = iface.ip();
-                                              info!("Listening on {}:{} for {}", ip, port, iface.name);
-                                              run(ip, port);
-                                          }));
+            let ip = iface.ip();
+            info!("Listening on {}:{} for {}", ip, port, iface.name);
+            run(ip, port);
+        }));
     }
 
     info!("All listeners spawned");

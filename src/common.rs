@@ -1,14 +1,14 @@
 use cookie::Cookie;
-use hyper::Client;
 use hyper::client::RequestBuilder;
 use hyper::header;
 use hyper::net::HttpsConnector;
 use hyper::server::request;
+use hyper::Client;
 use hyper_native_tls::NativeTlsClient;
 use json;
 use mustache;
 use mustache::MapBuilder;
-use nickel::{Response, MiddlewareResult, MediaType};
+use nickel::{MediaType, MiddlewareResult, Response};
 use std::io::Read;
 use std::ops::Deref;
 use url::percent_encoding;
@@ -37,10 +37,11 @@ pub fn json_for_request(rb: RequestBuilder) -> Result<json::JsonValue, String> {
     return Ok(obj);
 }
 
-pub fn render_to_response<'a, D>(mut response: Response<'a, D>,
-                                 path: &str,
-                                 data: &mustache::Data)
-                                 -> MiddlewareResult<'a, D> {
+pub fn render_to_response<'a, D>(
+    mut response: Response<'a, D>,
+    path: &str,
+    data: &mustache::Data,
+) -> MiddlewareResult<'a, D> {
     let template = mustache::compile_path(path).expect("working template");
     let mut buffer: Vec<u8> = vec![];
     template.render_data(&mut buffer, data).unwrap();
@@ -56,12 +57,15 @@ pub fn favourites(req: &request::Request) -> json::JsonValue {
         Some(val) => val.deref(),
         None => return json::JsonValue::new_object(),
     };
-    let raw = all_cookies.iter().map(|c| Cookie::parse(c.deref()).unwrap()).find(|k| k.name() == KEY);
+    let raw = all_cookies
+        .iter()
+        .map(|c| Cookie::parse(c.deref()).unwrap())
+        .find(|k| k.name() == KEY);
     match raw {
         Some(val) => {
             match json::parse(&val.value()) {
                 Ok(val) => val,
-                Err(_) => json::JsonValue::new_object(),  // assume junk
+                Err(_) => json::JsonValue::new_object(), // assume junk
             }
         }
         None => json::JsonValue::new_object(),
@@ -74,9 +78,8 @@ pub fn mustache_favourites(req: &request::Request) -> mustache::Data {
         .insert_vec("favourites", |vecbuilder| {
             let mut vecb = vecbuilder;
             for fav in favourites.entries() {
-                vecb = vecb.push_map(|mapbuilder| {
-                                         mapbuilder.insert_str("key", fav.0).insert_str("value", fav.1)
-                                     });
+                vecb = vecb
+                    .push_map(|mapbuilder| mapbuilder.insert_str("key", fav.0).insert_str("value", fav.1));
             }
             vecb
         })

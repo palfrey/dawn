@@ -2,8 +2,8 @@ use common;
 use hyper::header::Location;
 use mustache::Data;
 use mustache::MapBuilder;
-use nickel::{Request, Response, MiddlewareResult, QueryString};
 use nickel::status::StatusCode;
+use nickel::{MiddlewareResult, QueryString, Request, Response};
 
 pub fn id_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>) -> MiddlewareResult<'a, D> {
     let client = common::hyper_client();
@@ -22,21 +22,21 @@ pub fn id_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>
     let data = MapBuilder::new()
         .insert_vec("stops", |vecbuilder| {
             let mut vecb = vecbuilder;
-            for naptan_id in obj["lineGroup"].members().into_iter().map(|x| {
-                                                                            x["naptanIdReference"]
-                                                                                .as_str()
-                                                                                .unwrap_or("")
-                                                                        }) {
+            for naptan_id in obj["lineGroup"]
+                .members()
+                .into_iter()
+                .map(|x| x["naptanIdReference"].as_str().unwrap_or(""))
+            {
                 if naptan_id == "" {
                     continue;
                 }
-                let stopobj =
-            match common::json_for_request(
-                client.get(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals",
-                              naptan_id))) {
-                Ok(val) => val,
-                Err(_) => continue
-            };
+                let stopobj = match common::json_for_request(client.get(&format!(
+                    "https://api.tfl.gov.uk/StopPoint/{}/Arrivals",
+                    naptan_id
+                ))) {
+                    Ok(val) => val,
+                    Err(_) => continue,
+                };
                 let first_arrival = stopobj.members().nth(0);
                 if let Some(val) = first_arrival {
                     vecb = vecb.push_map(|mapbuilder| {
@@ -47,7 +47,8 @@ pub fn id_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>
                         } else {
                             let possible_direct = format!("{} ({})", stop_name, platform_name);
                             if direct_name == possible_direct {
-                                response.set(Location(format!("/arrivals/{}", naptan_id)))
+                                response
+                                    .set(Location(format!("/arrivals/{}", naptan_id)))
                                     .set(StatusCode::TemporaryRedirect);
                                 early_quit = true;
                                 return mapbuilder;
@@ -56,7 +57,8 @@ pub fn id_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>
                             format!(" (Stop {})", platform_name)
                         };
 
-                        mapbuilder.insert_str("id", naptan_id)
+                        mapbuilder
+                            .insert_str("id", naptan_id)
                             .insert_str("stopName", stop_name)
                             .insert_str("stopNumber", stop_number)
                     })
@@ -74,7 +76,9 @@ pub fn id_handler<'a, D>(request: &mut Request<D>, mut response: Response<'a, D>
             if stops.len() == 1 {
                 if let Data::Map(ref stop) = stops[0] {
                     if let Data::StrVal(ref id) = stop["id"] {
-                        response.set(Location(format!("/arrivals/{}", id))).set(StatusCode::MovedPermanently);
+                        response
+                            .set(Location(format!("/arrivals/{}", id)))
+                            .set(StatusCode::MovedPermanently);
                         return response.send("");
                     }
                 }
