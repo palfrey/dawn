@@ -5,7 +5,7 @@ use mustache::MapBuilder;
 
 #[derive(Deserialize)]
 pub struct SearchQuery {
-    pub query: String,
+    query: String,
 }
 
 pub fn search_handler(request: Query<SearchQuery>) -> HttpResponse {
