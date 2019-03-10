@@ -16,9 +16,8 @@ extern crate url;
 #[macro_use]
 extern crate lazy_static;
 
-use actix_web::{http::Method, server, App, HttpRequest, HttpResponse, test, http, HttpMessage};
+use actix_web::{http, http::Method, server, test, App, HttpMessage, HttpRequest, HttpResponse};
 use std::env;
-use hyper::rt::Future;
 
 mod arrivals;
 mod common;
@@ -63,9 +62,12 @@ fn main() {
 fn simple_search() {
     let mut srv = test::TestServer::with_factory(app);
     common::set_client(common::ClientType::TESTING);
-    let request = srv.client(
-         http::Method::GET, "/search?query=foo").finish().unwrap();
+    let request = srv
+        .client(http::Method::GET, "/search?query=foo")
+        .finish()
+        .unwrap();
     let response = srv.execute(request.send()).unwrap();
-    assert_eq!(response.body().wait().unwrap(), "");
+    let body: String = String::from_utf8(srv.execute(response.body()).unwrap().to_vec()).unwrap();
+    assert!(body.find("<title>Search: foo</title>").is_some());
     assert!(response.status().is_success());
 }

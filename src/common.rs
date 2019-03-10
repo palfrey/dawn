@@ -27,14 +27,15 @@ pub fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
         Some(ClientType::LIVE) => reqwest_mock::client::GenericClient::direct(),
         Some(ClientType::TESTING) => {
             if env::var("RECORDING").is_ok() {
-                reqwest_mock::client::GenericClient::replay_dir("test/requests")
+                reqwest_mock::client::GenericClient::replay_dir("tests/requests")
+            } else {
+                reqwest_mock::client::GenericClient::stub(StubClient::new(StubSettings {
+                    default: StubDefault::Error,
+                    strictness: StubStrictness::MethodUrl,
+                }))
             }
-            else {
-            reqwest_mock::client::GenericClient::stub(StubClient::new(StubSettings {
-            default: StubDefault::Error,
-            strictness: StubStrictness::MethodUrl,
-        }))}}
-        None => panic!()
+        }
+        None => panic!(),
     };
     let res = match client.get(url).send() {
         Ok(val) => val,
