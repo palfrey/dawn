@@ -16,7 +16,7 @@ extern crate url;
 #[macro_use]
 extern crate lazy_static;
 
-use actix_web::{http, http::Method, server, test, App, HttpMessage, HttpRequest, HttpResponse};
+use actix_web::{http::Method, server, App, HttpRequest, HttpResponse};
 use std::env;
 
 mod arrivals;
@@ -58,16 +58,22 @@ fn main() {
     server.run();
 }
 
-#[test]
-fn simple_search() {
-    let mut srv = test::TestServer::with_factory(app);
-    common::set_client(common::ClientType::TESTING);
-    let request = srv
-        .client(http::Method::GET, "/search?query=foo")
-        .finish()
-        .unwrap();
-    let response = srv.execute(request.send()).unwrap();
-    let body: String = String::from_utf8(srv.execute(response.body()).unwrap().to_vec()).unwrap();
-    assert!(body.find("<title>Search: foo</title>").is_some(), body);
-    assert!(response.status().is_success(), response.status());
+#[cfg(test)]
+mod tests {
+    use super::{app, common};
+    use actix_web::{http, test, HttpMessage};
+
+    #[test]
+    fn simple_search() {
+        let mut srv = test::TestServer::with_factory(app);
+        common::set_client(common::ClientType::TESTING);
+        let request = srv
+            .client(http::Method::GET, "/search?query=foo")
+            .finish()
+            .unwrap();
+        let response = srv.execute(request.send()).unwrap();
+        let body: String = String::from_utf8(srv.execute(response.body()).unwrap().to_vec()).unwrap();
+        assert!(body.find("<title>Search: foo</title>").is_some(), body);
+        assert!(response.status().is_success(), response.status());
+    }
 }

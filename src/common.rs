@@ -10,6 +10,7 @@ use url::percent_encoding;
 
 pub enum ClientType {
     LIVE,
+    #[cfg(test)]
     TESTING,
 }
 
@@ -17,6 +18,7 @@ lazy_static! {
     static ref CLIENT: Mutex<Option<ClientType>> = Mutex::new(Some(ClientType::LIVE));
 }
 
+#[cfg(test)]
 pub fn set_client(ct: ClientType) {
     CLIENT.lock().unwrap().replace(ct);
 }
@@ -24,6 +26,7 @@ pub fn set_client(ct: ClientType) {
 pub fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
     let client = match CLIENT.lock().unwrap().deref() {
         Some(ClientType::LIVE) => reqwest_mock::client::GenericClient::direct(),
+        #[cfg(test)]
         Some(ClientType::TESTING) => {
             reqwest_mock::client::GenericClient::replay_dir("tests/requests")
         }
