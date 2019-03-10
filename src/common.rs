@@ -3,8 +3,7 @@ use hyper::header::CONTENT_TYPE;
 use json;
 use mustache;
 use mustache::MapBuilder;
-use reqwest_mock::{Client, StubClient, StubDefault, StubSettings, StubStrictness};
-use std::env;
+use reqwest_mock::Client;
 use std::ops::Deref;
 use std::sync::Mutex;
 use url::percent_encoding;
@@ -26,14 +25,7 @@ pub fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
     let client = match CLIENT.lock().unwrap().deref() {
         Some(ClientType::LIVE) => reqwest_mock::client::GenericClient::direct(),
         Some(ClientType::TESTING) => {
-            if env::var("RECORDING").is_ok() {
-                reqwest_mock::client::GenericClient::replay_dir("tests/requests")
-            } else {
-                reqwest_mock::client::GenericClient::stub(StubClient::new(StubSettings {
-                    default: StubDefault::Error,
-                    strictness: StubStrictness::MethodUrl,
-                }))
-            }
+            reqwest_mock::client::GenericClient::replay_dir("tests/requests")
         }
         None => panic!(),
     };
