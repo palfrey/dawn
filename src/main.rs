@@ -68,6 +68,6 @@ fn simple_search() {
         .unwrap();
     let response = srv.execute(request.send()).unwrap();
     let body: String = String::from_utf8(srv.execute(response.body()).unwrap().to_vec()).unwrap();
-    assert!(body.find("<title>Search: foo</title>").is_some());
-    assert!(response.status().is_success());
+    assert!(body.find("<title>Search: foo</title>").is_some(), body);
+    assert!(response.status().is_success(), response.status());
 }
