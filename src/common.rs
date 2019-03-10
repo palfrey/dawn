@@ -3,15 +3,15 @@ use hyper::header::CONTENT_TYPE;
 use json;
 use mustache;
 use mustache::MapBuilder;
-use url::percent_encoding;
-use reqwest_mock::{Client, StubClient, StubSettings, StubDefault, StubStrictness};
-use std::sync::Mutex;
-use std::ops::Deref;
+use reqwest_mock::{Client, StubClient, StubDefault, StubSettings, StubStrictness};
 use std::env;
+use std::ops::Deref;
+use std::sync::Mutex;
+use url::percent_encoding;
 
 pub enum ClientType {
     LIVE,
-    TESTING
+    TESTING,
 }
 
 lazy_static! {
