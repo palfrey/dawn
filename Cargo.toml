@@ -17,5 +17,14 @@ get_if_addrs = "*"
 cookie = "*"
 serde = "1.0"
 serde_derive = "1.0"
+serde_json = "*"
 reqwest_mock = "0.5"
 lazy_static = "1.2"
+lambda_http = {optional=true, version="0.1"}
+
+[dev-dependencies]
+env_logger = "*"
+
+[features]
+default = []
+lambda = ["lambda_http"]

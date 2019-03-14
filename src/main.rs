@@ -5,6 +5,7 @@ extern crate hyper;
 extern crate itertools;
 extern crate json;
 extern crate log4rs;
+#[cfg(not(feature = "lambda"))]
 #[macro_use]
 extern crate log;
 extern crate mustache;
@@ -15,8 +16,20 @@ extern crate time;
 extern crate url;
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate serde_json;
+
+#[cfg(test)]
+extern crate env_logger;
+
+#[cfg(feature = "lambda")]
+#[macro_use]
+extern crate lambda_http;
+#[cfg(feature = "lambda")]
+use lambda_http::RequestExt;
 
 use actix_web::{http::Method, server, App, HttpRequest, HttpResponse};
+#[cfg(not(feature = "lambda"))]
 use std::env;
 
 mod arrivals;
@@ -43,6 +56,7 @@ fn app() -> App {
         .route("/arrivals/{stopid}", Method::GET, arrivals::arrivals_handler);
 }
 
+#[cfg(not(feature = "lambda"))]
 fn main() {
     log4rs::init_file("log.yaml", Default::default()).unwrap();
     let port = env::var("PORT")
@@ -58,10 +72,80 @@ fn main() {
     server.run();
 }
 
+#[cfg(feature = "lambda")]
+fn main() {
+    let server = server::new(|| app().finish()).bind("0.0.0.0:0").unwrap();
+    let addrs = server.addrs();
+    let addr = addrs.first().clone();
+    lambda!(|request: lambda_http::Request, context| {
+        println!("Req: {:?}", request);
+        Ok(format!(
+            "hello {}",
+            request
+                .query_string_parameters()
+                .get("name")
+                .unwrap_or_else(|| "stranger")
+        ))
+    });
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{app, common};
-    use actix_web::{http, test, HttpMessage};
+    use super::{app, common, main};
+    use actix_web::{http, server, test, App, HttpMessage, HttpResponse};
+    use std::{env, thread};
+
+    #[cfg(feature = "lambda")]
+    #[test]
+    fn lambda_test() {
+        env_logger::init();
+        thread::spawn(|| {
+            server::new(|| App::new()
+            .resource("/2018-06-01/runtime/invocation/next",
+                |r| r.method(http::Method::GET).f(|_r| {
+                    HttpResponse::Ok()
+                        .header("Lambda-Runtime-Aws-Request-Id", "1234")
+                        .header("Lambda-Runtime-Invoked-Function-Arn", "an-arn")
+                        .header("Lambda-Runtime-Deadline-Ms", "1000")
+                        .json(json!({
+    "requestContext": {
+        "elb": {
+            "targetGroupArn": "arn:aws:elasticloadbalancing:region:123456789012:targetgroup/my-target-group/6d0ecf831eec9f09"
+        }
+    },
+    "httpMethod": "GET",
+    "path": "/",
+    "queryStringParameters": {},
+    "headers": {
+        "accept": "text/html,application/xhtml+xml",
+        "accept-language": "en-US,en;q=0.8",
+        "content-type": "text/plain",
+        "cookie": "cookies",
+        "host": "lambda-846800462-us-east-2.elb.amazonaws.com",
+        "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)",
+        "x-amzn-trace-id": "Root=1-5bdb40ca-556d8b0c50dc66f0511bf520",
+        "x-forwarded-for": "72.21.198.66",
+        "x-forwarded-port": "443",
+        "x-forwarded-proto": "https"
+    },
+    "isBase64Encoded": false,
+    "body": "request_body"
+}))
+                }))
+            .default_resource(|r|
+                r.route().f(|r|{
+                    println!("{:?}", r);
+                    HttpResponse::NotFound()
+                })).finish()).bind("0.0.0.0:3456").unwrap().run()
+        });
+        env::set_var("AWS_LAMBDA_FUNCTION_NAME", "foo");
+        env::set_var("AWS_LAMBDA_FUNCTION_VERSION", "1");
+        env::set_var("AWS_LAMBDA_LOG_STREAM_NAME", "log");
+        env::set_var("AWS_LAMBDA_LOG_GROUP_NAME", "lg");
+        env::set_var("AWS_LAMBDA_FUNCTION_MEMORY_SIZE", "128");
+        env::set_var("AWS_LAMBDA_RUNTIME_API", "127.0.0.1:3456");
+        thread::spawn(|| main());
+    }
 
     #[test]
     fn simple_search() {
