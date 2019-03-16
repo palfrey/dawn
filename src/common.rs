@@ -27,9 +27,7 @@ pub fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
     let client = match CLIENT.lock().unwrap().deref() {
         Some(ClientType::LIVE) => reqwest_mock::client::GenericClient::direct(),
         #[cfg(test)]
-        Some(ClientType::TESTING) => {
-            reqwest_mock::client::GenericClient::replay_dir("tests/requests")
-        }
+        Some(ClientType::TESTING) => reqwest_mock::client::GenericClient::replay_dir("tests/requests"),
         None => panic!(),
     };
     let res = match client.get(url).send() {

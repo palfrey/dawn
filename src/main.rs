@@ -20,6 +20,8 @@ extern crate lazy_static;
 extern crate serde_json;
 
 #[cfg(test)]
+extern crate crossbeam;
+#[cfg(test)]
 extern crate env_logger;
 
 #[cfg(feature = "lambda")]
@@ -77,8 +79,8 @@ fn main() {
     let server = server::new(|| app().finish()).bind("0.0.0.0:0").unwrap();
     let addrs = server.addrs();
     let addr = addrs.first().clone();
-    lambda!(|request: lambda_http::Request, context| {
-        println!("Req: {:?}", request);
+    lambda!(|request: lambda_http::Request, _context| {
+        println!("Req to inner: {:?}", request);
         Ok(format!(
             "hello {}",
             request
@@ -92,22 +94,58 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::{app, common, main};
-    use actix_web::{http, server, test, App, HttpMessage, HttpResponse};
+    use actix_web::{http, server, test, App, HttpMessage, HttpRequest, HttpResponse, State};
+    use crossbeam::channel::unbounded;
+    use crossbeam::{Receiver, Sender};
     use std::{env, thread};
+
+    #[derive(Debug, Clone)]
+    struct AppState {
+        req: Receiver<(i32, serde_json::Value)>,
+        res: Sender<String>,
+    }
+
+    fn test_app(req: Receiver<(i32, serde_json::Value)>, res: Sender<String>) -> App<AppState> {
+        App::with_state(AppState { req, res })
+            .resource("/2018-06-01/runtime/invocation/1234/response", |r| {
+                r.method(http::Method::POST)
+                    .with(|(body, state): (String, State<AppState>)| {
+                        println!("Response body: {}", body);
+                        state.res.send(body).unwrap();
+                        HttpResponse::Ok()
+                    })
+            })
+            .resource("/2018-06-01/runtime/invocation/next", |r| {
+                r.method(http::Method::GET).with(|state: State<AppState>| {
+                    let (id, body) = match state.req.clone().recv() {
+                        Ok(val) => val,
+                        Err(err) => {
+                            return HttpResponse::InternalServerError().body(format!("{}", err));
+                        }
+                    };
+                    println!("Got req: {}", id);
+                    HttpResponse::Ok()
+                        .header("Lambda-Runtime-Aws-Request-Id", id.to_string())
+                        .header("Lambda-Runtime-Invoked-Function-Arn", "an-arn")
+                        .header("Lambda-Runtime-Deadline-Ms", "1000")
+                        .json(body)
+                })
+            })
+            .default_resource(|r| {
+                r.route().with(|(r, body): (HttpRequest<AppState>, String)| {
+                    println!("{:?}", r);
+                    println!("Body: {}", body);
+                    HttpResponse::NotFound()
+                })
+            })
+    }
 
     #[cfg(feature = "lambda")]
     #[test]
     fn lambda_test() {
-        env_logger::init();
-        thread::spawn(|| {
-            server::new(|| App::new()
-            .resource("/2018-06-01/runtime/invocation/next",
-                |r| r.method(http::Method::GET).f(|_r| {
-                    HttpResponse::Ok()
-                        .header("Lambda-Runtime-Aws-Request-Id", "1234")
-                        .header("Lambda-Runtime-Invoked-Function-Arn", "an-arn")
-                        .header("Lambda-Runtime-Deadline-Ms", "1000")
-                        .json(json!({
+        let (req_send, req_recv) = unbounded();
+        let (res_send, res_recv) = unbounded();
+        req_send.send((1234, json!({
     "requestContext": {
         "elb": {
             "targetGroupArn": "arn:aws:elasticloadbalancing:region:123456789012:targetgroup/my-target-group/6d0ecf831eec9f09"
@@ -130,13 +168,13 @@ mod tests {
     },
     "isBase64Encoded": false,
     "body": "request_body"
-}))
-                }))
-            .default_resource(|r|
-                r.route().f(|r|{
-                    println!("{:?}", r);
-                    HttpResponse::NotFound()
-                })).finish()).bind("0.0.0.0:3456").unwrap().run()
+}))).unwrap();
+        env_logger::init();
+        thread::spawn(move || {
+            server::new(move || test_app(req_recv.clone(), res_send.clone()).finish())
+                .bind("0.0.0.0:3456")
+                .unwrap()
+                .run()
         });
         env::set_var("AWS_LAMBDA_FUNCTION_NAME", "foo");
         env::set_var("AWS_LAMBDA_FUNCTION_VERSION", "1");
@@ -145,6 +183,7 @@ mod tests {
         env::set_var("AWS_LAMBDA_FUNCTION_MEMORY_SIZE", "128");
         env::set_var("AWS_LAMBDA_RUNTIME_API", "127.0.0.1:3456");
         thread::spawn(|| main());
+        println!("Response to main: {}", res_recv.recv().unwrap());
     }
 
     #[test]
