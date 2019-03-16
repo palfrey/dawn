@@ -94,6 +94,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::{app, common, main};
+    use actix_web::actix::System;
     use actix_web::{http, server, test, App, HttpMessage, HttpRequest, HttpResponse, State};
     use crossbeam::channel::unbounded;
     use crossbeam::{Receiver, Sender};
@@ -101,11 +102,11 @@ mod tests {
 
     #[derive(Debug, Clone)]
     struct AppState {
-        req: Receiver<(i32, serde_json::Value)>,
+        req: Receiver<Result<(i32, serde_json::Value), ()>>,
         res: Sender<String>,
     }
 
-    fn test_app(req: Receiver<(i32, serde_json::Value)>, res: Sender<String>) -> App<AppState> {
+    fn test_app(req: Receiver<Result<(i32, serde_json::Value), ()>>, res: Sender<String>) -> App<AppState> {
         App::with_state(AppState { req, res })
             .resource("/2018-06-01/runtime/invocation/1234/response", |r| {
                 r.method(http::Method::POST)
@@ -117,10 +118,12 @@ mod tests {
             })
             .resource("/2018-06-01/runtime/invocation/next", |r| {
                 r.method(http::Method::GET).with(|state: State<AppState>| {
-                    let (id, body) = match state.req.clone().recv() {
+                    let (id, body) = match state.req.clone().recv().unwrap() {
                         Ok(val) => val,
-                        Err(err) => {
-                            return HttpResponse::InternalServerError().body(format!("{}", err));
+                        Err(_) => {
+                            System::current().stop();
+                            thread::park();
+                            unimplemented!();
                         }
                     };
                     println!("Got req: {}", id);
@@ -145,7 +148,7 @@ mod tests {
     fn lambda_test() {
         let (req_send, req_recv) = unbounded();
         let (res_send, res_recv) = unbounded();
-        req_send.send((1234, json!({
+        req_send.send(Ok((1234, json!({
     "requestContext": {
         "elb": {
             "targetGroupArn": "arn:aws:elasticloadbalancing:region:123456789012:targetgroup/my-target-group/6d0ecf831eec9f09"
@@ -168,7 +171,7 @@ mod tests {
     },
     "isBase64Encoded": false,
     "body": "request_body"
-}))).unwrap();
+})))).unwrap();
         env_logger::init();
         thread::spawn(move || {
             server::new(move || test_app(req_recv.clone(), res_send.clone()).finish())
@@ -184,6 +187,8 @@ mod tests {
         env::set_var("AWS_LAMBDA_RUNTIME_API", "127.0.0.1:3456");
         thread::spawn(|| main());
         println!("Response to main: {}", res_recv.recv().unwrap());
+        // shutdown
+        req_send.send(Err(())).unwrap();
     }
 
     #[test]
