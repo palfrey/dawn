@@ -11,8 +11,8 @@ matrix:
   fast_finish: true
 
 script:
-- travis-cargo build -- $FEATURES
-- travis-cargo test -- $FEATURES
+- cargo build $FEATURES
+- cargo test $FEATURES
 
 env:
   matrix:
