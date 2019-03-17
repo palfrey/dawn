@@ -5,7 +5,6 @@ extern crate hyper;
 extern crate itertools;
 extern crate json;
 extern crate log4rs;
-#[cfg(not(feature = "lambda"))]
 #[macro_use]
 extern crate log;
 extern crate mustache;
@@ -33,7 +32,7 @@ use reqwest::Client;
 #[macro_use]
 extern crate lambda_http;
 #[cfg(feature = "lambda")]
-use lambda_http::RequestExt;
+extern crate aws_lambda_events;
 
 use actix_web::{http::Method, server, App, HttpRequest, HttpResponse};
 #[cfg(not(feature = "lambda"))]
@@ -87,6 +86,7 @@ fn main() {
     thread::spawn(move || server::new(|| app().finish()).bind("0.0.0.0:3457").unwrap().run());
     let client = Client::new();
     lambda!(|request: lambda_http::Request, _context| {
+        debug!("Req to inner: {:?}", request);
         let uri = &format!(
             "http://127.0.0.1:3457{}",
             &request
@@ -97,7 +97,7 @@ fn main() {
                 .unwrap()
                 .as_str()
         );
-        println!("Uri: {}", uri);
+        debug!("Uri for inner: {}", uri);
         let mut req = client.clone().request(request.method().clone(), uri);
         for (key, value) in request.headers() {
             req = req.header(key, value);
@@ -111,17 +111,15 @@ fn main() {
                 req = req.body(val.clone());
             }
         }
-        println!("Req to inner: {:?}", request);
-        println!("New req: {:?}", req);
-        let res = req.send().unwrap();
-        println!("Res: {:?}", res);
-        Ok(format!(
-            "hello {}",
-            request
-                .query_string_parameters()
-                .get("name")
-                .unwrap_or_else(|| "stranger")
-        ))
+        debug!("New req: {:?}", req);
+        let mut res = req.send().unwrap();
+        debug!("Res: {:?}", res);
+        let mut lambda_res = lambda_http::Response::builder();
+        lambda_res.status(res.status());
+        for (key, value) in res.headers() {
+            lambda_res.header(key, value);
+        }
+        Ok(lambda_res.body(res.text().unwrap()).unwrap())
     });
 }
 
@@ -145,7 +143,7 @@ mod tests {
             .resource("/2018-06-01/runtime/invocation/1234/response", |r| {
                 r.method(http::Method::POST)
                     .with(|(body, state): (String, State<AppState>)| {
-                        println!("Response body: {}", body);
+                        debug!("Response body: {}", body);
                         state.res.send(body).unwrap();
                         HttpResponse::Ok()
                     })
@@ -160,7 +158,7 @@ mod tests {
                             unimplemented!();
                         }
                     };
-                    println!("Got req: {}", id);
+                    debug!("Got req: {}", id);
                     HttpResponse::Ok()
                         .header("Lambda-Runtime-Aws-Request-Id", id.to_string())
                         .header("Lambda-Runtime-Invoked-Function-Arn", "an-arn")
@@ -170,8 +168,8 @@ mod tests {
             })
             .default_resource(|r| {
                 r.route().with(|(r, body): (HttpRequest<AppState>, String)| {
-                    println!("{:?}", r);
-                    println!("Body: {}", body);
+                    warn!("{:?}", r);
+                    warn!("Body: {}", body);
                     HttpResponse::NotFound()
                 })
             })
@@ -220,7 +218,10 @@ mod tests {
         env::set_var("AWS_LAMBDA_FUNCTION_MEMORY_SIZE", "128");
         env::set_var("AWS_LAMBDA_RUNTIME_API", "127.0.0.1:3456");
         thread::spawn(|| main());
-        println!("Response to main: {}", res_recv.recv().unwrap());
+        let resp_raw = res_recv.recv().unwrap();
+        let resp: aws_lambda_events::event::alb::AlbTargetGroupResponse =
+            serde_json::from_str(&resp_raw).unwrap();
+        debug!("Response to main: {:#?}", resp);
         // shutdown
         req_send.send(Err(())).unwrap();
     }
