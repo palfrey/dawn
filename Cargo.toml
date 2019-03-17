@@ -22,6 +22,7 @@ reqwest_mock = "0.5"
 lazy_static = "1.2"
 lambda_http = {optional=true, version="0.1"}
 aws_lambda_events = {optional=true, version="^0.2.3"}
+maplit = {optional=true, version="*"}
 
 [dev-dependencies]
 env_logger = "*"
@@ -30,4 +31,4 @@ reqwest = "0.9"
 
 [features]
 default = []
-lambda = ["lambda_http", "aws_lambda_events"]
+lambda = ["lambda_http", "aws_lambda_events", "maplit"]
