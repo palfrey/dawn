@@ -32,7 +32,7 @@ use reqwest::Client;
 extern crate lambda_http;
 #[cfg(feature = "lambda")]
 extern crate aws_lambda_events;
-#[cfg(feature = "lambda")]
+#[cfg(test)]
 #[macro_use]
 extern crate maplit;
 

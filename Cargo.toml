@@ -20,15 +20,16 @@ serde_derive = "1.0"
 serde_json = "*"
 reqwest_mock = "0.5"
 lazy_static = "1.2"
+
 lambda_http = {optional=true, version="0.1"}
 aws_lambda_events = {optional=true, version="^0.2.3"}
-maplit = {optional=true, version="*"}
+reqwest = {optional=true, version="0.9"}
 
 [dev-dependencies]
 env_logger = "*"
 crossbeam = "0.7"
-reqwest = "0.9"
+maplit = "*"
 
 [features]
 default = []
-lambda = ["lambda_http", "aws_lambda_events", "maplit"]
+lambda = ["lambda_http", "aws_lambda_events", "reqwest"]
