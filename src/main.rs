@@ -25,6 +25,11 @@ extern crate crossbeam;
 extern crate env_logger;
 
 #[cfg(feature = "lambda")]
+extern crate reqwest;
+#[cfg(feature = "lambda")]
+use reqwest::Client;
+
+#[cfg(feature = "lambda")]
 #[macro_use]
 extern crate lambda_http;
 #[cfg(feature = "lambda")]
@@ -33,6 +38,9 @@ use lambda_http::RequestExt;
 use actix_web::{http::Method, server, App, HttpRequest, HttpResponse};
 #[cfg(not(feature = "lambda"))]
 use std::env;
+
+#[cfg(feature = "lambda")]
+use std::thread;
 
 mod arrivals;
 mod common;
@@ -76,11 +84,37 @@ fn main() {
 
 #[cfg(feature = "lambda")]
 fn main() {
-    let server = server::new(|| app().finish()).bind("0.0.0.0:0").unwrap();
-    let addrs = server.addrs();
-    let addr = addrs.first().clone();
+    thread::spawn(move || server::new(|| app().finish()).bind("0.0.0.0:3457").unwrap().run());
+    let client = Client::new();
     lambda!(|request: lambda_http::Request, _context| {
+        let uri = &format!(
+            "http://127.0.0.1:3457{}",
+            &request
+                .uri()
+                .clone()
+                .into_parts()
+                .path_and_query
+                .unwrap()
+                .as_str()
+        );
+        println!("Uri: {}", uri);
+        let mut req = client.clone().request(request.method().clone(), uri);
+        for (key, value) in request.headers() {
+            req = req.header(key, value);
+        }
+        match request.body() {
+            lambda_http::Body::Empty => {}
+            lambda_http::Body::Text(val) => {
+                req = req.body(val.clone());
+            }
+            lambda_http::Body::Binary(val) => {
+                req = req.body(val.clone());
+            }
+        }
         println!("Req to inner: {:?}", request);
+        println!("New req: {:?}", req);
+        let res = req.send().unwrap();
+        println!("Res: {:?}", res);
         Ok(format!(
             "hello {}",
             request

@@ -25,6 +25,7 @@ lambda_http = {optional=true, version="0.1"}
 [dev-dependencies]
 env_logger = "*"
 crossbeam = "0.7"
+reqwest = "0.9"
 
 [features]
 default = []
