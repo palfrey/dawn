@@ -1,0 +1,44 @@
+[package]
+name = "dawn"
+version = "0.1.0"
+authors = ["Tom Parker <palfrey@tevp.net>"]
+
+[lib]
+path = "fake_lib.rs"
+
+[dependencies]
+actix-web = "0.7"
+hyper = "0.12"
+url = "*"
+log = "*"
+json = "*"
+log4rs = {version = ">= 0.5.0", features=["yaml_format"]}
+mustache = "0.8"
+itertools = "*"
+time = "*"
+get_if_addrs = "*"
+cookie = "*"
+serde = "1.0"
+serde_derive = "1.0"
+reqwest_mock = "0.5"
+lazy_static = "1.2"
+
+[raze]
+genmode = "Remote"
+workspace_path = "//cargo"
+
+[raze.crates.crc.'1.8.1']
+gen_buildrs = true
+
+[raze.crates.mime_guess.'2.0.0-alpha.6']
+gen_buildrs = true
+
+[raze.crates.ring.'0.13.5']
+gen_buildrs = true
+
+[raze.crates.unicase.'1.4.2']
+additional_flags = [
+  # Rustc is 1.15, enable all optional settings
+  "--cfg=__unicase__iter_cmp",
+  "--cfg=__unicase__defauler_hasher",
+]
