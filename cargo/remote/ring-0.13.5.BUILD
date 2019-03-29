@@ -56,10 +56,17 @@ genrule(
         # TODO(acmcarther): This needs to be revisited as part of the cross compilation story.
         #                   See also: https://github.com/google/cargo-raze/pull/54
         + " export TARGET='x86_64-unknown-linux-gnu';"
+        + " export HOST=x86_64-unknown-linux-gnu;"
         + " export RUST_BACKTRACE=full;"
+        + " export DEBUG=true;"
+        + " export CARGO_PKG_NAME=ring;"
         + " export CARGO_FEATURE_DEFAULT=1;"
         + " export CARGO_FEATURE_DEV_URANDOM_FALLBACK=1;"
         + " export CARGO_FEATURE_USE_HEAP=1;"
+        + " export CARGO_CFG_TARGET_ARCH=x86_64;"
+        + " export OPT_LEVEL=0;"
+        + " export CARGO_CFG_TARGET_OS=macos;"
+        + " export CARGO_CFG_TARGET_ENV=osx;"
         + " export OUT_DIR=$$PWD/ring_out_dir_outputs;"
         + " export BINARY_PATH=\"$$PWD/$(location :ring_build_script)\";"
         + " export OUT_TAR=$$PWD/$@;"
