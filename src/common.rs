@@ -3,7 +3,9 @@ use hyper::header::CONTENT_TYPE;
 use json;
 use mustache;
 use mustache::MapBuilder;
+#[cfg(feature = "mocking")]
 use reqwest_mock::Client;
+#[cfg(feature = "mocking")]
 use std::ops::Deref;
 use std::sync::Mutex;
 use url::percent_encoding;
@@ -23,7 +25,8 @@ pub fn set_client(ct: ClientType) {
     CLIENT.lock().unwrap().replace(ct);
 }
 
-pub fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
+#[cfg(feature = "mocking")]
+fn get_data(url: &String) -> Result<String, String> {
     let client = match CLIENT.lock().unwrap().deref() {
         Some(ClientType::LIVE) => reqwest_mock::client::GenericClient::direct(),
         #[cfg(test)]
@@ -36,7 +39,18 @@ pub fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
             return Err(format!("Can't connect to TfL: {}", err));
         }
     };
-    let buffer: String = res.body_to_utf8().unwrap();
+    return res.body_to_utf8().map_err(|e| format!("{:?}", e));
+}
+
+#[cfg(not(feature = "mocking"))]
+fn get_data(url: &String) -> Result<String, String> {
+    return reqwest::get(url)
+        .and_then(|mut r| r.text())
+        .map_err(|e| format!("{:?}", e));
+}
+
+pub fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
+    let buffer = get_data(url)?;
     let obj = match json::parse(&buffer) {
         Ok(val) => val,
         Err(_) => {

@@ -16,5 +16,5 @@ script:
 
 env:
   matrix:
-  - FEATURES=--features=lambda
+  - FEATURES=--features=lambda --no-default-features
   - FEATURES=

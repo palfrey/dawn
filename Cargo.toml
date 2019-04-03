@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Tom Parker <palfrey@tevp.net>"]
 
 [dependencies]
-actix-web = "0.7"
+actix-web = { version="0.7", features=["rust-tls"] }
 hyper = "0.12"
 url = "*"
 log = "*"
@@ -18,12 +18,12 @@ cookie = "*"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "*"
-reqwest_mock = "0.5"
+reqwest_mock = {optional=true, version="0.5"}
 lazy_static = "1.2"
 
 lambda_http = {optional=true, version="0.1"}
 aws_lambda_events = {optional=true, version="^0.2.3"}
-reqwest = {optional=true, version="0.9"}
+reqwest = {optional=true, version="0.9", features=["rustls-tls"], default-features=false}
 
 [dev-dependencies]
 env_logger = "*"
@@ -31,5 +31,6 @@ crossbeam = "0.7"
 maplit = "*"
 
 [features]
-default = []
+default = ["mocking"]
+mocking = ["reqwest_mock"]
 lambda = ["lambda_http", "aws_lambda_events", "reqwest"]

@@ -8,6 +8,7 @@ extern crate log4rs;
 #[macro_use]
 extern crate log;
 extern crate mustache;
+#[cfg(feature = "mocking")]
 extern crate reqwest_mock;
 #[macro_use]
 extern crate serde_derive;
