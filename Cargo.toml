@@ -34,3 +34,7 @@ maplit = "*"
 default = ["mocking"]
 mocking = ["reqwest_mock"]
 lambda = ["lambda_http", "aws_lambda_events", "reqwest"]
+
+[profile.release]
+lto = true
+panic = 'abort'
