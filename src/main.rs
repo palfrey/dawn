@@ -25,7 +25,7 @@ extern crate env_logger;
 #[cfg(feature = "lambda")]
 extern crate reqwest;
 #[cfg(feature = "lambda")]
-use reqwest::Client;
+use reqwest::{Client, RedirectPolicy};
 
 #[cfg(feature = "lambda")]
 #[macro_use]
@@ -91,7 +91,11 @@ fn main() {
 fn main() {
     env_logger::init();
     thread::spawn(move || server::new(|| app().finish()).bind("0.0.0.0:3457").unwrap().run());
-    let client = Client::new();
+    // Don't worry about any redirects, as we need loops for /favourite to work
+    let client = Client::builder()
+        .redirect(RedirectPolicy::custom(|attempt| attempt.follow()))
+        .build()
+        .unwrap();
     lambda!(|request: lambda_http::Request, _context| {
         debug!("Req to inner: {:?}", request);
         let uri = &format!(
@@ -111,7 +115,10 @@ fn main() {
         }
         for (key, value) in request.query_string_parameters().iter() {
             // ALB encodes the query parameters, and reqwest will do it again, so need to stop doing it twice!
-            let mut value = percent_decode(value.as_bytes()).decode_utf8().unwrap().to_string();
+            let mut value = percent_decode(value.as_bytes())
+                .decode_utf8()
+                .unwrap()
+                .to_string();
             value = value.replace("+", " "); // Also need to decode the + characters, which percent_decode doesn't
             debug!("Query param: '{}' = '{}'", key, value);
             req = req.query(&[(key, value)]);
