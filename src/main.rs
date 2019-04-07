@@ -31,6 +31,8 @@ use reqwest::Client;
 #[macro_use]
 extern crate lambda_http;
 #[cfg(feature = "lambda")]
+use lambda_http::RequestExt;
+#[cfg(feature = "lambda")]
 extern crate aws_lambda_events;
 #[cfg(test)]
 #[macro_use]
@@ -104,6 +106,9 @@ fn main() {
         let mut req = client.clone().request(request.method().clone(), uri);
         for (key, value) in request.headers() {
             req = req.header(key, value);
+        }
+        for (key, value) in request.query_string_parameters().iter() {
+            req = req.query(&[(key, value)]);
         }
         match request.body() {
             lambda_http::Body::Empty => {}
