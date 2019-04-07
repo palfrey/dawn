@@ -98,7 +98,8 @@ dawn_function = t.add_resource(Function(
     ),
     Environment=Environment(
         Variables={
-            "RUST_BACKTRACE": "1"
+            "RUST_BACKTRACE": "1",
+            "RUST_LOG": "debug"
         }
     ),
     Handler="not_used",
@@ -118,21 +119,6 @@ ApplicationElasticLB = t.add_resource(elb.LoadBalancer(
     Subnets=[x["SubnetId"] for x in subnets]
 ))
 
-listener = t.add_resource(elb.Listener(
-    "Listener",
-    LoadBalancerArn=Ref(ApplicationElasticLB),
-    Port=80,
-    Protocol="HTTP",
-    DefaultActions=[elb.Action(
-        Type="fixed-response",
-        FixedResponseConfig=elb.FixedResponseConfig(
-            ContentType="text/plain",
-            StatusCode="404",
-            MessageBody="No lambda configured"
-        )
-    )]
-))
-
 t.add_output([
     Output(
         "LoadbalancerArn",
@@ -141,10 +127,6 @@ t.add_output([
     Output(
         "LoadbalancerDNSName",
         Value=GetAtt(ApplicationElasticLB, 'DNSName')
-    ),
-    Output(
-        "ListenerArn",
-        Value=Ref(listener)
     ),
     Output(
         "DawnFunctionArn",
@@ -158,7 +140,7 @@ cf = boto3.client('cloudformation')
 print("Validating template")
 cf.validate_template(TemplateBody=t.to_json())
 
-stack_name = "dawn-test"
+stack_name = "dawn"
 
 # Using the filter functions on describe_stacks makes it fail when there's zero entries...
 print("Checking existing CloudFormation stacks")
@@ -186,75 +168,69 @@ outputs = dict([(x["OutputKey"], x["OutputValue"]) for x in stack["Outputs"]])
 print(outputs)
 lb = outputs["LoadbalancerArn"]
 
+print("Setting up listener")
 elb_client = boto3.client('elbv2')
 existing_target_groups = elb_client.describe_target_groups()["TargetGroups"]
 existing_target_groups = dict([(x["TargetGroupName"],x) for x in existing_target_groups])
-#print(existing_target_groups)
 
-funcs = [("Dawn", outputs["DawnFunctionArn"], "/")]
+name = "%s-dawn" % stack_name
+# if name in existing_target_groups:
+#     old_target = existing_target_groups[name]["TargetGroupArn"]
+#     rules = elb_client.describe_rules()["Rules"]
+#     for r in rules:
+#         for a in r["Actions"]:
+#             if a["Type"] == "forward" and a["TargetGroupArn"] == old_target:
+#                 elb_client.delete_rule(RuleArn=r["RuleArn"])
+#                 break
+#     elb_client.delete_target_group(
+#         TargetGroupArn=old_target
+#     )
+group = elb_client.create_target_group(
+    Name=name,
+    TargetType="lambda",
+)
 
 lambda_client = boto3.client('lambda')
+targetGroupArn = group["TargetGroups"][0]["TargetGroupArn"]
+statement_id = "%s-permissions" % name
+funcArn = outputs["DawnFunctionArn"]
+try:
+    policy = lambda_client.get_policy(
+        FunctionName=funcArn
+    )
+    statements = json.loads(policy["Policy"])["Statement"]
+    if statement_id in [x["Sid"] for x in statements]:
+        lambda_client.remove_permission(
+            FunctionName=funcArn,
+            StatementId=statement_id
+        )
+except botocore.exceptions.ClientError as e:
+    if e.response['Error']['Code'] == 'ResourceNotFoundException' and e.operation_name == 'GetPolicy':
+        pass # ignore, because we'd only be deleting it
+    else:
+        raise
+lambda_client.add_permission(
+    Action="lambda:InvokeFunction",
+    FunctionName=funcArn,
+    Principal="elasticloadbalancing.amazonaws.com",
+    SourceArn=targetGroupArn,
+    StatementId=statement_id
+)
+targets = elb_client.register_targets(
+    TargetGroupArn=targetGroupArn,
+    Targets=[{
+        'Id': funcArn
+    }]
+)
 
-for name, funcArn, path in funcs:
-    name = "%s-%s" % (stack_name, name)
-    if name in existing_target_groups:
-        old_target = existing_target_groups[name]["TargetGroupArn"]
-        rules = elb_client.describe_rules(ListenerArn=outputs["ListenerArn"])["Rules"]
-        for r in rules:
-            for a in r["Actions"]:
-                if a["Type"] == "forward" and a["TargetGroupArn"] == old_target:
-                    elb_client.delete_rule(RuleArn=r["RuleArn"])
-                    break
-        elb_client.delete_target_group(
-            TargetGroupArn=old_target
-        )
-    group = elb_client.create_target_group(
-        Name=name,
-        TargetType="lambda",
-    )
-    print(group)
-    targetGroupArn = group["TargetGroups"][0]["TargetGroupArn"]
-    statement_id = "%s-permissions" % name
-    try:
-        policy = lambda_client.get_policy(
-            FunctionName=funcArn
-        )
-        statements = json.loads(policy["Policy"])["Statement"]
-        if statement_id in [x["Sid"] for x in statements]:
-            lambda_client.remove_permission(
-                FunctionName=funcArn,
-                StatementId=statement_id
-            )
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == 'ResourceNotFoundException' and e.operation_name == 'GetPolicy':
-            pass # ignore, because we'd only be deleting it
-        else:
-            raise
-    lambda_client.add_permission(
-        Action="lambda:InvokeFunction",
-        FunctionName=funcArn,
-        Principal="elasticloadbalancing.amazonaws.com",
-        SourceArn=targetGroupArn,
-        StatementId=statement_id
-    )
-    targets = elb_client.register_targets(
-        TargetGroupArn=targetGroupArn,
-        Targets=[{
-            'Id': funcArn
-        }]
-    )
-    rule = elb_client.create_rule(
-        ListenerArn=outputs["ListenerArn"],
-        Priority=100,
-        Conditions=[{
-            'Field': "path-pattern",
-            'Values': [path]
-        }],
-        Actions=[{
-            'Type': "forward",
-            'TargetGroupArn': targetGroupArn
-        }]
-    )
-    print(rule)
+rule = elb_client.create_listener(
+    LoadBalancerArn=outputs["LoadbalancerArn"],
+    Port=80,
+    Protocol="HTTP",
+    DefaultActions=[{
+        'Type': "forward",
+        'TargetGroupArn': targetGroupArn
+    }]
+)
 
 print(f"http://{outputs['LoadbalancerDNSName']}")
