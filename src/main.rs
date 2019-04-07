@@ -91,9 +91,9 @@ fn main() {
 fn main() {
     env_logger::init();
     thread::spawn(move || server::new(|| app().finish()).bind("0.0.0.0:3457").unwrap().run());
-    // Don't worry about any redirects, as we need loops for /favourite to work
+    // Don't do any redirects so we get the /favourite cookies
     let client = Client::builder()
-        .redirect(RedirectPolicy::custom(|attempt| attempt.follow()))
+        .redirect(RedirectPolicy::none())
         .build()
         .unwrap();
     lambda!(|request: lambda_http::Request, _context| {
@@ -140,6 +140,7 @@ fn main() {
         for (key, value) in res.headers() {
             lambda_res.header(key, value);
         }
+        debug!("lambda_res: {:?}", lambda_res);
         Ok(lambda_res.body(res.text().unwrap()).unwrap())
     });
 }
