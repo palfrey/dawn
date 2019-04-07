@@ -33,6 +33,8 @@ extern crate lambda_http;
 #[cfg(feature = "lambda")]
 use lambda_http::RequestExt;
 #[cfg(feature = "lambda")]
+use url::percent_encoding::percent_decode;
+#[cfg(feature = "lambda")]
 extern crate aws_lambda_events;
 #[cfg(test)]
 #[macro_use]
@@ -108,6 +110,10 @@ fn main() {
             req = req.header(key, value);
         }
         for (key, value) in request.query_string_parameters().iter() {
+            // ALB encodes the query parameters, and reqwest will do it again, so need to stop doing it twice!
+            let mut value = percent_decode(value.as_bytes()).decode_utf8().unwrap().to_string();
+            value = value.replace("+", " "); // Also need to decode the + characters, which percent_decode doesn't
+            debug!("Query param: '{}' = '{}'", key, value);
             req = req.query(&[(key, value)]);
         }
         match request.body() {
