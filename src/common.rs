@@ -63,7 +63,7 @@ pub fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
     let obj = match json::parse(&buffer) {
         Ok(val) => val,
         Err(_) => {
-            return Err(format!("Bad json: {} ", buffer));
+            return Err(format!("Bad json for {}: {} ", url, buffer));
         }
     };
     return Ok(obj);
