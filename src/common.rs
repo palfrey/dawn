@@ -5,10 +5,19 @@ use mustache;
 use mustache::MapBuilder;
 #[cfg(feature = "mocking")]
 use reqwest_mock::Client;
+use std::collections::HashMap;
 #[cfg(feature = "mocking")]
 use std::ops::Deref;
 use std::sync::Mutex;
 use url::percent_encoding;
+
+lazy_static! {
+    static ref TEMPLATES: HashMap<&'static str, &'static str> = {
+        let mut m = HashMap::new();
+        include!(concat!(env!("OUT_DIR"), "/templates.rs"));
+        m
+    };
+}
 
 pub enum ClientType {
     LIVE,
@@ -61,7 +70,10 @@ pub fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
 }
 
 pub fn render_to_response(path: &str, data: &mustache::Data) -> HttpResponse {
-    let template = mustache::compile_path(path).expect("working template");
+    let template_data = TEMPLATES
+        .get(path)
+        .expect(&format!("Expected template for {}", path));
+    let template = mustache::compile_str(template_data).expect("working template");
     let mut buffer: Vec<u8> = vec![];
     template.render_data(&mut buffer, data).unwrap();
     let mut response = HttpResponse::Ok();
