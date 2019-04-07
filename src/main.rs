@@ -20,7 +20,6 @@ extern crate serde_json;
 
 #[cfg(test)]
 extern crate crossbeam;
-#[cfg(test)]
 extern crate env_logger;
 
 #[cfg(feature = "lambda")]
@@ -86,6 +85,7 @@ fn main() {
 
 #[cfg(feature = "lambda")]
 fn main() {
+    env_logger::init();
     thread::spawn(move || server::new(|| app().finish()).bind("0.0.0.0:3457").unwrap().run());
     let client = Client::new();
     lambda!(|request: lambda_http::Request, _context| {

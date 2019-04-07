@@ -20,13 +20,13 @@ serde_derive = "1.0"
 serde_json = "*"
 reqwest_mock = {optional=true, version="0.5"}
 lazy_static = "1.2"
+env_logger = "*"
 
 lambda_http = {optional=true, version="0.1"}
 aws_lambda_events = {optional=true, version="^0.2.3"}
 reqwest = {optional=true, version="0.9", features=["rustls-tls"], default-features=false}
 
 [dev-dependencies]
-env_logger = "*"
 crossbeam = "0.7"
 maplit = "*"
 
