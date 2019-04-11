@@ -37,7 +37,7 @@ use url::percent_encoding::percent_decode;
 #[cfg(feature = "lambda")]
 extern crate aws_lambda_events;
 #[cfg(test)]
-#[macro_use]
+#[cfg_attr(feature = "lambda", macro_use)]
 extern crate maplit;
 
 use actix_web::{http::Method, server, App, HttpRequest, HttpResponse};
@@ -89,7 +89,7 @@ fn main() {
 
 #[cfg(feature = "lambda")]
 fn main() {
-    env_logger::init();
+    env_logger::try_init().unwrap_or_default();
     thread::spawn(move || server::new(|| app().finish()).bind("0.0.0.0:3457").unwrap().run());
     // Don't do any redirects so we get the /favourite cookies
     let client = Client::builder()
@@ -147,14 +147,22 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use super::{app, common, main};
+    use super::{app, common};
+    #[cfg(feature = "lambda")]
+    use super::{main, server};
+    #[cfg(feature = "lambda")]
     use actix_web::actix::System;
-    use actix_web::{http, server, test, App, HttpMessage, HttpRequest, HttpResponse, State};
+    use actix_web::{http, test, HttpMessage};
+    #[cfg(feature = "lambda")]
+    use actix_web::{App, HttpRequest, HttpResponse, State};
     #[cfg(feature = "lambda")]
     use aws_lambda_events::event::alb;
-    use crossbeam::channel::unbounded;
+    #[cfg(feature = "lambda")]
+    use crossbeam::unbounded;
     use crossbeam::{Receiver, Sender};
+    #[cfg(feature = "lambda")]
     use std::collections::HashMap;
+    #[cfg(feature = "lambda")]
     use std::{env, thread};
 
     #[derive(Debug, Clone)]
@@ -163,6 +171,7 @@ mod tests {
         res: Sender<String>,
     }
 
+    #[cfg(feature = "lambda")]
     fn test_app(req: Receiver<Result<(i32, serde_json::Value), ()>>, res: Sender<String>) -> App<AppState> {
         App::with_state(AppState { req, res })
             .resource("/2018-06-01/runtime/invocation/1234/response", |r| {
@@ -232,8 +241,8 @@ mod tests {
                 multi_value_headers: HashMap::new(),
                 is_base64_encoded: false,
                 body: Some("request_body".to_string())
-}).unwrap()))).unwrap();
-        env_logger::init();
+            }).unwrap()))).unwrap();
+        env_logger::try_init().unwrap_or_default();
         thread::spawn(move || {
             server::new(move || test_app(req_recv.clone(), res_send.clone()).finish())
                 .bind("0.0.0.0:3456")
@@ -256,6 +265,7 @@ mod tests {
 
     #[test]
     fn simple_search() {
+        env_logger::try_init().unwrap_or_default();
         let mut srv = test::TestServer::with_factory(app);
         common::set_client(common::ClientType::TESTING);
         let request = srv

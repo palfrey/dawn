@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Tom Parker <palfrey@tevp.net>"]
 
 [dependencies]
-actix-web = { version="0.7", features=["rust-tls"] }
+actix-web = { version="0.7" }
 hyper = "0.12"
 url = "*"
 log = "*"
