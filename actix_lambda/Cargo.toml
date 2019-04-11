@@ -1,0 +1,17 @@
+[package]
+name = "actix_lambda"
+version = "0.1.0"
+authors = ["Tom Parker-Shemilt <palfrey@tevp.net>"]
+edition = "2018"
+
+[dependencies]
+lambda_http = {version="0.1"}
+aws_lambda_events = {version="^0.2.3"}
+reqwest = {version="0.9", features=["rustls-tls"], default-features=false}
+crossbeam = "0.7"
+maplit = "*"
+actix-web = { version="0.7" }
+env_logger = "*"
+log = "*"
+url = "*"
+serde_json = "*"

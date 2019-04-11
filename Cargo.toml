@@ -21,19 +21,13 @@ serde_json = "*"
 reqwest_mock = {optional=true, version="0.5"}
 lazy_static = "1.2"
 env_logger = "*"
-
-lambda_http = {optional=true, version="0.1"}
-aws_lambda_events = {optional=true, version="^0.2.3"}
+actix_lambda = {optional=true, path="actix_lambda"}
 reqwest = {optional=true, version="0.9", features=["rustls-tls"], default-features=false}
-
-[dev-dependencies]
-crossbeam = "0.7"
-maplit = "*"
 
 [features]
 default = ["mocking"]
 mocking = ["reqwest_mock"]
-lambda = ["lambda_http", "aws_lambda_events", "reqwest"]
+lambda = ["actix_lambda", "reqwest"]
 
 [profile.release]
 lto = true
