@@ -69,6 +69,7 @@ fn main() {
 
 #[cfg(feature = "lambda")]
 fn main() {
+    env_logger::try_init().unwrap_or_default();
     actix_lambda::run(app);
 }
 

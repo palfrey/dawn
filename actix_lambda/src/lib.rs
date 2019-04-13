@@ -4,17 +4,17 @@
 //! fn root_handler(request: HttpRequest) -> &'static str {
 //!     return "Hello world";
 //! }
-//! 
+//!
 //! fn app() -> App {
 //!     return App::new()
 //!         .route("/", Method::GET, root_handler);
 //!         // More route handlers
 //! }
-//! 
+//!
 //! fn main() {
 //!     actix_lambda::run(app);
 //! }
-//! 
+//!
 //! #[cfg(test)]
 //! mod tests {
 //!     #[test]
@@ -26,12 +26,12 @@
 
 pub mod test;
 
-use reqwest::{Client, RedirectPolicy};
-use lambda_http::{lambda, RequestExt};
-use url::percent_encoding::percent_decode;
 use actix_web::{server, App};
-use std::thread;
+use lambda_http::{lambda, RequestExt};
 use log::debug;
+use reqwest::{Client, RedirectPolicy};
+use std::thread;
+use url::percent_encoding::percent_decode;
 
 ///
 /// Runs your actix-web app as a lambda app that will respond to Application Load Balancer requests.
@@ -53,10 +53,15 @@ use log::debug;
 ///     actix_lambda::run(app);
 /// }
 pub fn run<F>(app: F)
-    where F: Fn() -> App + std::marker::Sync + std::marker::Send + 'static + std::clone::Clone
- {
-    env_logger::try_init().unwrap_or_default();
-    thread::spawn(move || server::new(move || app().finish()).bind("0.0.0.0:3457").unwrap().run());
+where
+    F: Fn() -> App + std::marker::Sync + std::marker::Send + 'static + std::clone::Clone,
+{
+    thread::spawn(move || {
+        server::new(move || app().finish())
+            .bind("0.0.0.0:3457")
+            .unwrap()
+            .run()
+    });
     // Don't do any redirects because otherwise we lose data between requests
     let client = Client::builder()
         .redirect(RedirectPolicy::none())

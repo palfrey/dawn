@@ -3,11 +3,11 @@ use actix_web::actix::System;
 use actix_web::{http, server, App, HttpRequest, HttpResponse, State};
 use aws_lambda_events::event::alb;
 use crossbeam::unbounded;
+use crossbeam::{Receiver, Sender};
+use log::{debug, warn};
+use maplit::hashmap;
 use std::collections::HashMap;
 use std::{env, thread};
-use crossbeam::{Receiver, Sender};
-use maplit::hashmap;
-use log::{warn, debug};
 
 #[derive(Debug, Clone)]
 struct AppState {
@@ -74,8 +74,9 @@ fn test_app(req: Receiver<Result<(i32, serde_json::Value), ()>>, res: Sender<Str
 /// # use actix_lambda::test::lambda_test;
 /// lambda_test(mainloop)
 ///
-pub fn lambda_test<F>(main_loop: F) 
-    where F: FnOnce() -> () + std::marker::Send + 'static
+pub fn lambda_test<F>(main_loop: F)
+where
+    F: FnOnce() -> () + std::marker::Send + 'static,
 {
     let (req_send, req_recv) = unbounded();
     let (res_send, res_recv) = unbounded();
@@ -107,7 +108,6 @@ pub fn lambda_test<F>(main_loop: F)
             is_base64_encoded: false,
             body: Some("request_body".to_string())
         }).unwrap()))).unwrap();
-    env_logger::try_init().unwrap_or_default();
     thread::spawn(move || {
         server::new(move || test_app(req_recv.clone(), res_send.clone()).finish())
             .bind("0.0.0.0:3456")
