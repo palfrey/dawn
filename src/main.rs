@@ -16,7 +16,6 @@ extern crate time;
 extern crate url;
 #[macro_use]
 extern crate lazy_static;
-extern crate serde_json;
 #[cfg(feature = "lambda")]
 extern crate actix_lambda;
 
