@@ -1,13 +1,10 @@
 //! Test helpers for actix_lambda applications
-use actix_web::actix::System;
-use actix_web::{http, server, App, HttpRequest, HttpResponse, State};
+use actix_web::{actix::System, http, server, App, HttpRequest, HttpResponse, State};
 use aws_lambda_events::event::alb;
-use crossbeam::unbounded;
-use crossbeam::{Receiver, Sender};
+use crossbeam::{unbounded, Receiver, Sender};
 use log::{debug, warn};
 use maplit::hashmap;
-use std::collections::HashMap;
-use std::{env, thread};
+use std::{collections::HashMap, env, thread};
 
 #[derive(Debug, Clone)]
 struct AppState {
