@@ -1,3 +1,29 @@
+//! # actix_lambda
+//! Runs your actix-web app as a lambda app that will respond to Application Load Balancer requests
+//! ```
+//! fn root_handler(request: HttpRequest) -> &'static str {
+//!     return "Hello world";
+//! }
+//! 
+//! fn app() -> App {
+//!     return App::new()
+//!         .route("/", Method::GET, root_handler);
+//!         // More route handlers
+//! }
+//! 
+//! fn main() {
+//!     actix_lambda::run(app);
+//! }
+//! 
+//! #[cfg(test)]
+//! mod tests {
+//!     #[test]
+//!     fn lambda_test() {
+//!         actix_lambda::test::lambda_test(main);
+//!     }
+//! }
+//! ```
+
 pub mod test;
 
 use reqwest::{Client, RedirectPolicy};
@@ -7,6 +33,25 @@ use actix_web::{server, App};
 use std::thread;
 use log::debug;
 
+///
+/// Runs your actix-web app as a lambda app that will respond to Application Load Balancer requests.
+///
+/// ```ignore
+/// use actix_web::{App, http::Method, HttpRequest};
+///
+/// fn root_handler(request: HttpRequest) -> &'static str {
+///     return "Hello world";
+/// }
+///
+/// fn app() -> App {
+///     return App::new()
+///         .route("/", Method::GET, root_handler);
+///         // More route handlers
+/// }
+///
+/// fn main() {
+///     actix_lambda::run(app);
+/// }
 pub fn run<F>(app: F)
     where F: Fn() -> App + std::marker::Sync + std::marker::Send + 'static + std::clone::Clone
  {

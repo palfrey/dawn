@@ -10,17 +10,23 @@ import botocore
 import json
 import hashlib
 from zipfile import ZipFile
+import argparse
+import configparser
+import os.path
 
-t = Template()
+parser = argparse.ArgumentParser()
+parser.add_argument("AppPath", type=str, help="Path to application")
+parser.add_argument("--stack-name", help="CloudFormation stack name. Defaults to name of app")
+args = parser.parse_args()
 
-sts_client = boto3.client("sts")
-account_id = sts_client.get_caller_identity()["Account"]
-
-s3_client = boto3.client('s3')
+app_config = configparser.ConfigParser()
+app_config.read_file(open(os.path.join(args.AppPath, "Cargo.toml")))
+app_name = app_config["package"]["name"][1:-1] # Removing quotes either side
 
 BLOCKSIZE = 65536
 hasher = hashlib.sha1()
-code_path = "../../target/x86_64-unknown-linux-musl/release/dawn"
+code_path = os.path.join(args.AppPath, "target/x86_64-unknown-linux-musl/release", app_name)
+print("Hashing app at %s" % code_path)
 with open(code_path, 'rb') as afile:
     buf = afile.read(BLOCKSIZE)
     while len(buf) > 0:
@@ -28,7 +34,12 @@ with open(code_path, 'rb') as afile:
         buf = afile.read(BLOCKSIZE)
 digest = hasher.hexdigest()
 
-bucket_name = f"{account_id}-dawn"
+t = Template()
+sts_client = boto3.client("sts")
+print("Getting AWS account id")
+account_id = sts_client.get_caller_identity()["Account"]
+s3_client = boto3.client('s3')
+bucket_name = f"{account_id}-{app_name}"
 
 try:
     s3_client.head_bucket(Bucket=bucket_name)
@@ -47,6 +58,7 @@ try:
     s3_client.head_object(Bucket=bucket_name, Key=digest)
 except botocore.exceptions.ClientError as e:
     if e.response['ResponseMetadata']['HTTPStatusCode'] == 404:
+        print("Uploading app to S3")
         with ZipFile('code.zip', 'w') as myzip:
             myzip.write(code_path, arcname="bootstrap")
         s3_client.put_object(
@@ -90,8 +102,8 @@ LambdaExecutionRole = t.add_resource(Role(
 ))
 
 # Create the Lambda function
-dawn_function = t.add_resource(Function(
-    "DawnFunction",
+app_function = t.add_resource(Function(
+    "AppFunction",
     Code=Code(
         S3Bucket=bucket_name,
         S3Key=digest,
@@ -129,8 +141,8 @@ t.add_output([
         Value=GetAtt(ApplicationElasticLB, 'DNSName')
     ),
     Output(
-        "DawnFunctionArn",
-        Value=GetAtt(dawn_function, "Arn")
+        "AppFunctionArn",
+        Value=GetAtt(app_function, "Arn")
     ),
 ])
 
@@ -140,14 +152,14 @@ cf = boto3.client('cloudformation')
 print("Validating template")
 cf.validate_template(TemplateBody=t.to_json())
 
-stack_name = "dawn"
+stack_name = app_name if args.stack_name == None else args.stack_name
 
 # Using the filter functions on describe_stacks makes it fail when there's zero entries...
 print("Checking existing CloudFormation stacks")
 stacks = [x for x in cf.describe_stacks()["Stacks"] if x["StackName"] == stack_name]
 
 if len(stacks) == 1:
-    print("Updating %s" % stack_name)
+    print("Updating %s stack" % stack_name)
     try:
         stack_result = cf.update_stack(StackName=stack_name, TemplateBody=t.to_json(), Capabilities=['CAPABILITY_IAM'])
         waiter = cf.get_waiter('stack_update_complete')
@@ -158,14 +170,13 @@ if len(stacks) == 1:
         else:
             raise
 else:
-    print("Creating %s" % stack_name)
+    print("Creating %s stack" % stack_name)
     stack_result = cf.create_stack(StackName=stack_name, TemplateBody=t.to_json(), Capabilities=['CAPABILITY_IAM'])
     waiter = cf.get_waiter('stack_create_complete')
     waiter.wait(StackName=stack_name)
 
 stack = cf.describe_stacks(StackName=stack_name)["Stacks"][0]
 outputs = dict([(x["OutputKey"], x["OutputValue"]) for x in stack["Outputs"]])
-print(outputs)
 lb = outputs["LoadbalancerArn"]
 
 print("Setting up listener")
@@ -173,18 +184,10 @@ elb_client = boto3.client('elbv2')
 existing_target_groups = elb_client.describe_target_groups()["TargetGroups"]
 existing_target_groups = dict([(x["TargetGroupName"],x) for x in existing_target_groups])
 
-name = "%s-dawn" % stack_name
-# if name in existing_target_groups:
-#     old_target = existing_target_groups[name]["TargetGroupArn"]
-#     rules = elb_client.describe_rules()["Rules"]
-#     for r in rules:
-#         for a in r["Actions"]:
-#             if a["Type"] == "forward" and a["TargetGroupArn"] == old_target:
-#                 elb_client.delete_rule(RuleArn=r["RuleArn"])
-#                 break
-#     elb_client.delete_target_group(
-#         TargetGroupArn=old_target
-#     )
+if stack_name != app_name:
+    name = "%s-%s" % (stack_name, app_name)
+else:
+    name = app_name
 group = elb_client.create_target_group(
     Name=name,
     TargetType="lambda",
@@ -193,7 +196,7 @@ group = elb_client.create_target_group(
 lambda_client = boto3.client('lambda')
 targetGroupArn = group["TargetGroups"][0]["TargetGroupArn"]
 statement_id = "%s-permissions" % name
-funcArn = outputs["DawnFunctionArn"]
+funcArn = outputs["AppFunctionArn"]
 try:
     policy = lambda_client.get_policy(
         FunctionName=funcArn
@@ -233,4 +236,4 @@ rule = elb_client.create_listener(
     }]
 )
 
-print(f"http://{outputs['LoadbalancerDNSName']}")
+print(f"{app_name} is deployed at http://{outputs['LoadbalancerDNSName']}")

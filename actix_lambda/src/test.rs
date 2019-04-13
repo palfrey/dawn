@@ -1,3 +1,4 @@
+//! Test helpers for actix_lambda applications
 use actix_web::actix::System;
 use actix_web::{http, server, App, HttpRequest, HttpResponse, State};
 use aws_lambda_events::event::alb;
@@ -51,6 +52,28 @@ fn test_app(req: Receiver<Result<(i32, serde_json::Value), ()>>, res: Sender<Str
         })
 }
 
+///
+/// Tests your actix-web app as a lambda app that will respond to Application Load Balancer requests
+///
+/// ```rust
+/// use actix_web::{App, http::Method, HttpRequest};
+///
+/// fn root_handler(request: HttpRequest) -> &'static str {
+///     return "Hello world";
+/// }
+///
+/// fn app() -> App {
+///     return App::new()
+///         .route("/", Method::GET, root_handler);
+///         // More route handlers
+/// }
+///
+/// fn mainloop() {
+///     actix_lambda::run(app);
+/// }
+/// # use actix_lambda::test::lambda_test;
+/// lambda_test(mainloop)
+///
 pub fn lambda_test<F>(main_loop: F) 
     where F: FnOnce() -> () + std::marker::Send + 'static
 {
