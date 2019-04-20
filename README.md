@@ -23,6 +23,10 @@ Heroku Setup
 4. `heroku config:set RUST_VERSION=1.21.0 TZ="Europe/London" RUST_BACKTRACE=1`
 5. ` git push heroku master`
 
+AWS Lambda Setup
+----------------
+This uses [actix_lambda](https://github.com/palfrey/actix_lambda) and you should follow the setup instructions over there to make this work there
+
 License
 -------
 [AGPL3](LICENSE)
