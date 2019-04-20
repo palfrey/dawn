@@ -23,6 +23,8 @@ env_logger = "*"
 actix_lambda = {optional=true, version="0.1"}
 reqwest = {optional=true, version="0.9", features=["rustls-tls"], default-features=false}
 
+# Mocking doesn't work along with Lambda, as reqwest_mock needs an old version of reqwest, which needs OpenSSL
+# and compiling OpenSSL with musl is hard on a non-Linux box
 [features]
 default = ["mocking"]
 mocking = ["reqwest_mock"]
