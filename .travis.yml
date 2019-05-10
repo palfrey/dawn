@@ -4,7 +4,17 @@ rust:
   - beta
   - nightly
 cache: cargo
+
 matrix:
   allow_failures:
     - rust: nightly
   fast_finish: true
+
+script:
+- cargo build $FEATURES
+- cargo test $FEATURES
+
+env:
+  matrix:
+  - FEATURES=--features=lambda --no-default-features
+  - FEATURES=
