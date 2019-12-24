@@ -5,9 +5,10 @@ extern crate hyper;
 extern crate itertools;
 extern crate json;
 extern crate log4rs;
-#[macro_use]
+#[cfg_attr(not(feature="lambda"), macro_use)]
 extern crate log;
 extern crate mustache;
+#[cfg(feature = "mocking")]
 extern crate reqwest_mock;
 #[macro_use]
 extern crate serde_derive;
@@ -15,9 +16,16 @@ extern crate time;
 extern crate url;
 #[macro_use]
 extern crate lazy_static;
+#[cfg(feature = "lambda")]
+extern crate actix_lambda;
 
-use actix_web::{http::Method, server, App, HttpRequest, HttpResponse};
+extern crate env_logger;
+
+use actix_web::{http::Method, App, HttpRequest, HttpResponse};
+#[cfg(not(feature = "lambda"))]
 use std::env;
+#[cfg(not(feature = "lambda"))]
+use actix_web::server;
 
 mod arrivals;
 mod common;
@@ -43,6 +51,7 @@ fn app() -> App {
         .route("/arrivals/{stopid}", Method::GET, arrivals::arrivals_handler);
 }
 
+#[cfg(not(feature = "lambda"))]
 fn main() {
     log4rs::init_file("log.yaml", Default::default()).unwrap();
     let port = env::var("PORT")
@@ -58,13 +67,30 @@ fn main() {
     server.run();
 }
 
+#[cfg(feature = "lambda")]
+fn main() {
+    env_logger::try_init().unwrap_or_default();
+    actix_lambda::run(app);
+}
+
 #[cfg(test)]
 mod tests {
     use super::{app, common};
+    #[cfg(feature = "lambda")]
+    use super::main;
     use actix_web::{http, test, HttpMessage};
+    #[cfg(feature = "lambda")]
+    use actix_lambda;
+
+    #[cfg(feature = "lambda")]
+    #[test]
+    fn lambda_test() {
+        actix_lambda::test::lambda_test(main);
+    }
 
     #[test]
     fn simple_search() {
+        env_logger::try_init().unwrap_or_default();
         let mut srv = test::TestServer::with_factory(app);
         common::set_client(common::ClientType::TESTING);
         let request = srv

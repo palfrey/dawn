@@ -23,6 +23,12 @@ Heroku Setup
 4. `heroku config:set RUST_VERSION=1.21.0 TZ="Europe/London" RUST_BACKTRACE=1`
 5. ` git push heroku master`
 
+AWS Lambda Setup
+----------------
+This uses [actix_lambda](https://github.com/palfrey/actix_lambda) and you should follow the setup instructions over there to make this work there
+Only change needed is doing the build as `cargo build --release --target x86_64-unknown-linux-musl --no-default-features --features lambda` so we don't enable
+mocking on lambda as reqwest_mock needs a version of reqwest that still uses OpenSSL all the time.
+
 License
 -------
 [AGPL3](LICENSE)

@@ -3,10 +3,21 @@ use hyper::header::CONTENT_TYPE;
 use json;
 use mustache;
 use mustache::MapBuilder;
+#[cfg(feature = "mocking")]
 use reqwest_mock::Client;
+use std::collections::HashMap;
+#[cfg(feature = "mocking")]
 use std::ops::Deref;
 use std::sync::Mutex;
 use url::percent_encoding;
+
+lazy_static! {
+    static ref TEMPLATES: HashMap<&'static str, &'static str> = {
+        let mut m = HashMap::new();
+        include!(concat!(env!("OUT_DIR"), "/templates.rs"));
+        m
+    };
+}
 
 pub enum ClientType {
     LIVE,
@@ -23,13 +34,12 @@ pub fn set_client(ct: ClientType) {
     CLIENT.lock().unwrap().replace(ct);
 }
 
-pub fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
+#[cfg(feature = "mocking")]
+fn get_data(url: &String) -> Result<String, String> {
     let client = match CLIENT.lock().unwrap().deref() {
         Some(ClientType::LIVE) => reqwest_mock::client::GenericClient::direct(),
         #[cfg(test)]
-        Some(ClientType::TESTING) => {
-            reqwest_mock::client::GenericClient::replay_dir("tests/requests")
-        }
+        Some(ClientType::TESTING) => reqwest_mock::client::GenericClient::replay_dir("tests/requests"),
         None => panic!(),
     };
     let res = match client.get(url).send() {
@@ -38,18 +48,32 @@ pub fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
             return Err(format!("Can't connect to TfL: {}", err));
         }
     };
-    let buffer: String = res.body_to_utf8().unwrap();
+    return res.body_to_utf8().map_err(|e| format!("{:?}", e));
+}
+
+#[cfg(not(feature = "mocking"))]
+fn get_data(url: &String) -> Result<String, String> {
+    return reqwest::get(url)
+        .and_then(|mut r| r.text())
+        .map_err(|e| format!("{:?}", e));
+}
+
+pub fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
+    let buffer = get_data(url)?;
     let obj = match json::parse(&buffer) {
         Ok(val) => val,
         Err(_) => {
-            return Err(format!("Bad json: {} ", buffer));
+            return Err(format!("Bad json for {}: {} ", url, buffer));
         }
     };
     return Ok(obj);
 }
 
 pub fn render_to_response(path: &str, data: &mustache::Data) -> HttpResponse {
-    let template = mustache::compile_path(path).expect("working template");
+    let template_data = TEMPLATES
+        .get(path)
+        .expect(&format!("Expected template for {}", path));
+    let template = mustache::compile_str(template_data).expect("working template");
     let mut buffer: Vec<u8> = vec![];
     template.render_data(&mut buffer, data).unwrap();
     let mut response = HttpResponse::Ok();
