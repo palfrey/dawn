@@ -66,20 +66,17 @@ mod tests {
         actix_lambda::test::lambda_test(main);
     }
 
-    #[test]
-    fn simple_search() {
+    #[actix_rt::test]
+    async fn simple_search() {
         env_logger::try_init().unwrap_or_default();
-        let _srv = test::start_with(test::config().h1(), || 
+        let srv = test::start_with(test::config().h1(), ||
             App::new().configure(config)
         );
         common::set_client(common::ClientType::TESTING);
-        // let request = srv
-        //     .get("/search?query=foo")
-        //     .send()
-        //     .unwrap();
-        // let response = request.send().unwrap();
-        // let body: String = String::from_utf8(srv.execute(response.body()).unwrap().to_vec()).unwrap();
-        // assert!(body.find("<title>Search: foo</title>").is_some(), body);
-        // assert!(response.status().is_success(), response.status());
+        let request = srv.get("/search?query=foo");
+        let mut response = request.send().await.unwrap();
+        let body: String = String::from_utf8(response.body().await.unwrap().to_vec()).unwrap();
+        assert!(body.find("<title>Search: foo</title>").is_some(), body);
+        assert!(response.status().is_success(), response.status());
     }
 }
