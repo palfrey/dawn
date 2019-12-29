@@ -1,7 +1,7 @@
 use actix_web::{dev::HttpResponseBuilder, http::StatusCode, web::Form, HttpRequest, HttpResponse};
 use common;
 use cookie::Cookie as CookiePair;
-use hyper::header::{LOCATION, SET_COOKIE};
+use actix_web::http::header::{LOCATION, SET_COOKIE};
 use json;
 use mustache::MapBuilder;
 use time;

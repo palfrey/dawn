@@ -13,7 +13,7 @@ extern crate reqwest_mock;
 #[macro_use]
 extern crate serde_derive;
 extern crate time;
-extern crate url;
+extern crate percent_encoding;
 #[macro_use]
 extern crate lazy_static;
 #[cfg(feature = "lambda")]
@@ -63,7 +63,7 @@ fn main() {
         info!("Listening on {}:{} for {}", ip, port, iface.name);
         server = server.bind((ip, port)).unwrap();
     }
-    server.run().unwrap();
+    server.run();
 }
 
 #[cfg(feature = "lambda")]
@@ -76,10 +76,10 @@ fn main() {
 mod tests {
     #[cfg(feature = "lambda")]
     use super::main;
-    use super::{app, common};
+    use super::{config, common};
     #[cfg(feature = "lambda")]
     use actix_lambda;
-    use actix_web::{http, test, HttpMessage};
+    use actix_web::{http, test, App};
 
     #[cfg(feature = "lambda")]
     #[test]
@@ -90,13 +90,15 @@ mod tests {
     #[test]
     fn simple_search() {
         env_logger::try_init().unwrap_or_default();
-        let mut srv = test::TestServer::with_factory(app);
+        let mut srv = test::start_with(test::config().h1(), || 
+            App::new().configure(config)
+        );
         common::set_client(common::ClientType::TESTING);
         let request = srv
-            .client(http::Method::GET, "/search?query=foo")
-            .finish()
+            .get("/search?query=foo")
+            .send()
             .unwrap();
-        let response = srv.execute(request.send()).unwrap();
+        let response = request.send().unwrap();
         let body: String = String::from_utf8(srv.execute(response.body()).unwrap().to_vec()).unwrap();
         assert!(body.find("<title>Search: foo</title>").is_some(), body);
         assert!(response.status().is_success(), response.status());

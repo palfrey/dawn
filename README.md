@@ -1,6 +1,7 @@
 Dawn
 ====
 [![Build Status](https://travis-ci.com/palfrey/dawn.svg?branch=master)](https://travis-ci.com/palfrey/dawn)
+[![MSRV: 1.40.0](https://flat.badgen.net/badge/MSRV/1.40.0/purple)](https://blog.rust-lang.org/2019/12/19/Rust-1.40.0.html)
 
 Named both for the [NASA Dawn mission](http://dawn.jpl.nasa.gov/) and that it turned
 up when I did a thesaurus search for Countdown. It's a replacement for the previously excellent [TfL](https://tfl.gov.uk/) Countdown site, which [they recently got rid of](https://blog.tfl.gov.uk/2016/05/24/countdown-moving-to-the-tfl-website/). I was annoyed by this, until they turned out to have [done a lot of work to their API recently](https://api.tfl.gov.uk/), so I could fix this.

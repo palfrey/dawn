@@ -1,6 +1,6 @@
 use actix_web::{http::StatusCode, web::Query, HttpResponse};
 use common;
-use hyper::header::LOCATION;
+use actix_web::http::header::LOCATION;
 use mustache::MapBuilder;
 
 #[derive(Deserialize)]
