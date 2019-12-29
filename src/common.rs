@@ -10,6 +10,7 @@ use std::collections::HashMap;
 use std::ops::Deref;
 use std::sync::Mutex;
 use percent_encoding;
+use lazy_static::lazy_static;
 
 lazy_static! {
     static ref TEMPLATES: HashMap<&'static str, &'static str> = {

@@ -2,12 +2,13 @@
 name = "dawn"
 version = "0.1.0"
 authors = ["Tom Parker-Shemilt <palfrey@tevp.net>"]
+edition = "2018"
 
 [dependencies]
 actix-web = "2"
 hyper = "0.12"
-percent-encoding = "*"
-log = "*"
+percent-encoding = "1"
+log = ">=0.4.5"
 json = "*"
 log4rs = {version = ">= 0.5.0", features=["yaml_format"]}
 mustache = "0.8"

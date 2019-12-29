@@ -1,6 +1,7 @@
 use actix_web::{http::StatusCode, web::Query, HttpResponse};
-use common;
+use crate::common;
 use mustache::MapBuilder;
+use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub struct LocationQuery {
