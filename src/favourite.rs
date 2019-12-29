@@ -1,4 +1,4 @@
-use actix_web::{dev::HttpResponseBuilder, http::StatusCode, Form, HttpRequest, HttpResponse};
+use actix_web::{dev::HttpResponseBuilder, http::StatusCode, web::Form, HttpRequest, HttpResponse};
 use common;
 use cookie::Cookie as CookiePair;
 use hyper::header::{LOCATION, SET_COOKIE};

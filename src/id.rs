@@ -1,4 +1,4 @@
-use actix_web::{http::StatusCode, HttpResponse, Path, Query};
+use actix_web::{http::StatusCode, web::Path, web::Query, HttpResponse};
 use common;
 use hyper::header::LOCATION;
 use mustache::Data;

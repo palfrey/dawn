@@ -1,4 +1,4 @@
-use actix_web::{HttpRequest, HttpResponse};
+use actix_web::{HttpMessage, HttpRequest, HttpResponse};
 use hyper::header::CONTENT_TYPE;
 use json;
 use mustache;

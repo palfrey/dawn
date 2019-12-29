@@ -1,4 +1,4 @@
-use actix_web::{http::StatusCode, HttpRequest, HttpResponse, Path, Query};
+use actix_web::{http::StatusCode, web::Path, web::Query, HttpRequest, HttpResponse};
 use common;
 use itertools::Itertools;
 use json;

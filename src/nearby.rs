@@ -1,16 +1,19 @@
-use actix_web::{http::StatusCode, HttpRequest, HttpResponse};
+use actix_web::{http::StatusCode, web::Query, HttpResponse};
 use common;
 use mustache::MapBuilder;
 
-pub fn nearby_handler(request: HttpRequest) -> HttpResponse {
-    let query = request.query();
-    let latitude = query.get("latitude").expect("Missing latitude");
-    let longitude = query.get("longitude").expect("Missing longitude");
+#[derive(Deserialize)]
+pub struct LocationQuery {
+    latitude: f32,
+    longitude: f32,
+}
+
+pub fn nearby_handler(query: Query<LocationQuery>) -> HttpResponse {
     let url = &format!(
         "https://api.tfl.gov.\
          uk/StopPoint?lat={}&lon={}\
          &stopTypes=NaptanPublicBusCoachTram&radius=500",
-        latitude, longitude
+        query.latitude, query.longitude
     );
     let obj = match common::json_for_url(url) {
         Ok(val) => val,
