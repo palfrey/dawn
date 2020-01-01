@@ -6,6 +6,12 @@ rust:
 cache: cargo
 dist: bionic
 
+addons:
+  apt:
+    packages:
+    - pkg-config
+    - libssl-dev
+
 matrix:
   allow_failures:
     - rust: nightly
