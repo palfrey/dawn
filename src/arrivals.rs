@@ -1,10 +1,11 @@
-use actix_web::{http::StatusCode, HttpRequest, HttpResponse, Path, Query};
-use common;
+use actix_web::{http::StatusCode, web::Path, web::Query, HttpRequest, HttpResponse};
+use crate::common;
 use itertools::Itertools;
 use json;
 use mustache::MapBuilder;
 use std::collections::HashSet;
 use time;
+use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub struct ArrivalsQuery {

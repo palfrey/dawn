@@ -4,6 +4,13 @@ rust:
   - beta
   - nightly
 cache: cargo
+dist: bionic
+
+addons:
+  apt:
+    packages:
+    - pkg-config
+    - libssl-dev
 
 matrix:
   allow_failures:
@@ -11,8 +18,9 @@ matrix:
   fast_finish: true
 
 script:
-- cargo build $FEATURES
-- cargo test $FEATURES
+- cargo build $FEATURES || travis_terminate 1
+- cargo test $FEATURES || travis_terminate 1
+- if [ "$FEATURES" == "" ]; then ./test.sh; fi
 
 env:
   matrix:

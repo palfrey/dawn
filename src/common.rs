@@ -1,5 +1,5 @@
-use actix_web::{HttpRequest, HttpResponse};
-use hyper::header::CONTENT_TYPE;
+use actix_web::{HttpMessage, HttpRequest, HttpResponse};
+use actix_web::http::header::CONTENT_TYPE;
 use json;
 use mustache;
 use mustache::MapBuilder;
@@ -9,7 +9,8 @@ use std::collections::HashMap;
 #[cfg(feature = "mocking")]
 use std::ops::Deref;
 use std::sync::Mutex;
-use url::percent_encoding;
+use percent_encoding;
+use lazy_static::lazy_static;
 
 lazy_static! {
     static ref TEMPLATES: HashMap<&'static str, &'static str> = {

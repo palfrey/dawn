@@ -2,26 +2,28 @@
 name = "dawn"
 version = "0.1.0"
 authors = ["Tom Parker-Shemilt <palfrey@tevp.net>"]
+edition = "2018"
 
 [dependencies]
-actix-web = "0.7"
+actix-web = "2"
 hyper = "0.12"
-url = "*"
-log = "*"
+percent-encoding = "1"
+log = ">=0.4.5"
 json = "*"
 log4rs = {version = ">= 0.5.0", features=["yaml_format"]}
 mustache = "0.8"
 itertools = "*"
-time = "*"
+time = "<0.2"
 get_if_addrs = "*"
 cookie = "*"
 serde = "1.0"
 serde_derive = "1.0"
-reqwest_mock = {optional=true, version="0.5"}
+reqwest_mock = {optional=true, version="0.6"}
 lazy_static = "1.2"
 env_logger = "*"
-actix_lambda = {optional=true, version="0.1"}
-reqwest = {optional=true, version="0.9", features=["rustls-tls"], default-features=false}
+actix_lambda = {optional=true, version="0.2"}
+reqwest = {optional=true, version="0.9", default-features=false}
+actix-rt = "*"
 
 # Mocking doesn't work along with Lambda, as reqwest_mock needs an old version of reqwest, which needs OpenSSL
 # and compiling OpenSSL with musl is hard on a non-Linux box
