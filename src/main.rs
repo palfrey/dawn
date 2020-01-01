@@ -1,6 +1,6 @@
 #[cfg(not(feature = "lambda"))]
-use actix_web::HttpServer;
-use actix_web::{web, App, HttpRequest, HttpResponse};
+use actix_web::{App, HttpServer};
+use actix_web::{web, HttpRequest, HttpResponse};
 #[cfg(not(feature = "lambda"))]
 use std::env;
 #[cfg(not(feature = "lambda"))]
@@ -30,7 +30,8 @@ fn config(cfg: &mut web::ServiceConfig) {
 }
 
 #[cfg(not(feature = "lambda"))]
-fn main() {
+#[actix_rt::main]
+async fn main() {
     log4rs::init_file("log.yaml", Default::default()).unwrap();
     let port = env::var("PORT")
         .unwrap_or("8000".to_string())
@@ -42,13 +43,13 @@ fn main() {
         info!("Listening on {}:{} for {}", ip, port, iface.name);
         server = server.bind((ip, port)).unwrap();
     }
-    server.run();
+    server.run().await.unwrap();
 }
 
 #[cfg(feature = "lambda")]
 fn main() {
     env_logger::try_init().unwrap_or_default();
-    actix_lambda::run(app);
+    actix_lambda::run(config);
 }
 
 #[cfg(test)]
