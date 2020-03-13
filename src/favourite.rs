@@ -1,10 +1,11 @@
-use actix_web::{dev::HttpResponseBuilder, http::StatusCode, Form, HttpRequest, HttpResponse};
-use common;
+use actix_web::{dev::HttpResponseBuilder, http::StatusCode, web::Form, HttpRequest, HttpResponse};
+use crate::common;
 use cookie::Cookie as CookiePair;
-use hyper::header::{LOCATION, SET_COOKIE};
+use actix_web::http::header::{LOCATION, SET_COOKIE};
 use json;
 use mustache::MapBuilder;
 use time;
+use serde::Deserialize;
 
 fn set_cookie(response: &mut HttpResponseBuilder, existing: json::JsonValue) {
     response.header(

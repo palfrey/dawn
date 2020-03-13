@@ -1,7 +1,8 @@
-use actix_web::{http::StatusCode, HttpResponse, Query};
-use common;
-use hyper::header::LOCATION;
+use actix_web::{http::StatusCode, web::Query, HttpResponse};
+use crate::common;
+use actix_web::http::header::LOCATION;
 use mustache::MapBuilder;
+use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub struct SearchQuery {

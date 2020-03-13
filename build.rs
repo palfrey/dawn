@@ -8,7 +8,7 @@ use std::{
 
 const SOURCE_DIR: &str = "resources/templates";
 
-fn main() -> Result<(), Box<Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let out_dir = env::var("OUT_DIR")?;
     let root_dir = env::var("CARGO_MANIFEST_DIR")?;
     let dest_path = Path::new(&out_dir).join("templates.rs");

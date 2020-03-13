@@ -1,31 +1,10 @@
-extern crate actix_web;
-extern crate cookie;
-extern crate get_if_addrs;
-extern crate hyper;
-extern crate itertools;
-extern crate json;
-extern crate log4rs;
-#[cfg_attr(not(feature="lambda"), macro_use)]
-extern crate log;
-extern crate mustache;
-#[cfg(feature = "mocking")]
-extern crate reqwest_mock;
-#[macro_use]
-extern crate serde_derive;
-extern crate time;
-extern crate url;
-#[macro_use]
-extern crate lazy_static;
-#[cfg(feature = "lambda")]
-extern crate actix_lambda;
-
-extern crate env_logger;
-
-use actix_web::{http::Method, App, HttpRequest, HttpResponse};
+#[cfg(not(feature = "lambda"))]
+use actix_web::{App, HttpServer};
+use actix_web::{web, HttpRequest, HttpResponse};
 #[cfg(not(feature = "lambda"))]
 use std::env;
 #[cfg(not(feature = "lambda"))]
-use actix_web::server;
+use log::info;
 
 mod arrivals;
 mod common;
@@ -39,48 +18,48 @@ fn root_handler(request: HttpRequest) -> HttpResponse {
     common::render_to_response("resources/templates/root.mustache", &data)
 }
 
-fn app() -> App {
-    return App::new()
-        .route("/", Method::GET, root_handler)
-        .route("/search", Method::GET, search::search_handler)
-        .route("/id/{id}", Method::GET, id::id_handler)
-        .route("/nearby", Method::GET, nearby::nearby_handler)
-        .route("/favourites", Method::GET, favourite::list_favourites)
-        .route("/favourites", Method::POST, favourite::add_favourite)
-        .route("/favourite-remove", Method::POST, favourite::remove_favourite)
-        .route("/arrivals/{stopid}", Method::GET, arrivals::arrivals_handler);
+fn config(cfg: &mut web::ServiceConfig) {
+    cfg.route("/", web::get().to(root_handler))
+        .route("/search", web::get().to(search::search_handler))
+        .route("/id/{id}", web::get().to(id::id_handler))
+        .route("/nearby", web::get().to(nearby::nearby_handler))
+        .route("/favourites", web::get().to(favourite::list_favourites))
+        .route("/favourites", web::post().to(favourite::add_favourite))
+        .route("/favourite-remove", web::post().to(favourite::remove_favourite))
+        .route("/arrivals/{stopid}", web::get().to(arrivals::arrivals_handler));
 }
 
 #[cfg(not(feature = "lambda"))]
-fn main() {
+#[actix_rt::main]
+async fn main() {
     log4rs::init_file("log.yaml", Default::default()).unwrap();
     let port = env::var("PORT")
         .unwrap_or("8000".to_string())
         .parse::<u16>()
         .unwrap();
-    let mut server = server::new(|| app().finish());
+    let mut server = HttpServer::new(|| App::new().configure(config));
     for iface in get_if_addrs::get_if_addrs().unwrap() {
         let ip = iface.ip();
         info!("Listening on {}:{} for {}", ip, port, iface.name);
         server = server.bind((ip, port)).unwrap();
     }
-    server.run();
+    server.run().await.unwrap();
 }
 
 #[cfg(feature = "lambda")]
 fn main() {
     env_logger::try_init().unwrap_or_default();
-    actix_lambda::run(app);
+    actix_lambda::run(config);
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{app, common};
     #[cfg(feature = "lambda")]
     use super::main;
-    use actix_web::{http, test, HttpMessage};
+    use super::{config, common};
     #[cfg(feature = "lambda")]
     use actix_lambda;
+    use actix_web::{test, App};
 
     #[cfg(feature = "lambda")]
     #[test]
@@ -88,17 +67,16 @@ mod tests {
         actix_lambda::test::lambda_test(main);
     }
 
-    #[test]
-    fn simple_search() {
+    #[actix_rt::test]
+    async fn simple_search() {
         env_logger::try_init().unwrap_or_default();
-        let mut srv = test::TestServer::with_factory(app);
+        let srv = test::start_with(test::config().h1(), ||
+            App::new().configure(config)
+        );
         common::set_client(common::ClientType::TESTING);
-        let request = srv
-            .client(http::Method::GET, "/search?query=foo")
-            .finish()
-            .unwrap();
-        let response = srv.execute(request.send()).unwrap();
-        let body: String = String::from_utf8(srv.execute(response.body()).unwrap().to_vec()).unwrap();
+        let request = srv.get("/search?query=foo");
+        let mut response = request.send().await.unwrap();
+        let body: String = String::from_utf8(response.body().await.unwrap().to_vec()).unwrap();
         assert!(body.find("<title>Search: foo</title>").is_some(), body);
         assert!(response.status().is_success(), response.status());
     }
