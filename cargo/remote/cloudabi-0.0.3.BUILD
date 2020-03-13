@@ -31,7 +31,7 @@ rust_library(
     edition = "2015",
     srcs = glob(["**/*.rs"]),
     deps = [
-        "@raze__bitflags__1_0_4//:bitflags",
+        "@raze__bitflags__1_2_1//:bitflags",
     ],
     rustc_flags = [
         "--cap-lints=allow",

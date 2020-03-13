@@ -33,7 +33,7 @@ rust_library(
     srcs = glob(["**/*.rs"]),
     deps = [
         "@raze__brotli_sys__0_3_2//:brotli_sys",
-        "@raze__libc__0_2_44//:libc",
+        "@raze__libc__0_2_66//:libc",
     ],
     rustc_flags = [
         "--cap-lints=allow",

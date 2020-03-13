@@ -31,7 +31,7 @@ rust_library(
     edition = "2015",
     srcs = glob(["**/*.rs"]),
     deps = [
-        "@raze__rand_core__0_3_0//:rand_core",
+        "@raze__rand_core__0_3_1//:rand_core",
     ],
     rustc_flags = [
         "--cap-lints=allow",

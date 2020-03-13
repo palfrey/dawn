@@ -31,8 +31,8 @@ rust_library(
     edition = "2015",
     srcs = glob(["**/*.rs"]),
     deps = [
-        "@raze__futures__0_1_25//:futures",
-        "@raze__num_cpus__1_8_0//:num_cpus",
+        "@raze__futures__0_1_29//:futures",
+        "@raze__num_cpus__1_11_1//:num_cpus",
     ],
     rustc_flags = [
         "--cap-lints=allow",
@@ -40,7 +40,6 @@ rust_library(
     version = "0.1.8",
     crate_features = [
         "default",
-        "futures",
         "with-deprecated",
     ],
 )

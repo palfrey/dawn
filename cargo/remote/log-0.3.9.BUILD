@@ -31,7 +31,7 @@ rust_library(
     edition = "2015",
     srcs = glob(["**/*.rs"]),
     deps = [
-        "@raze__log__0_4_6//:log",
+        "@raze__log__0_4_8//:log",
     ],
     rustc_flags = [
         "--cap-lints=allow",
@@ -39,7 +39,6 @@ rust_library(
     version = "0.3.9",
     crate_features = [
         "default",
-        "log",
         "use_std",
     ],
 )

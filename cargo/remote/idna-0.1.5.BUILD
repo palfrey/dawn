@@ -33,7 +33,7 @@ rust_library(
     deps = [
         "@raze__matches__0_1_8//:matches",
         "@raze__unicode_bidi__0_3_4//:unicode_bidi",
-        "@raze__unicode_normalization__0_1_7//:unicode_normalization",
+        "@raze__unicode_normalization__0_1_11//:unicode_normalization",
     ],
     rustc_flags = [
         "--cap-lints=allow",

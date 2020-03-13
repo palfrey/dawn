@@ -32,7 +32,7 @@ rust_library(
     srcs = glob(["**/*.rs"]),
     deps = [
         "@raze__c_linked_list__1_1_1//:c_linked_list",
-        "@raze__libc__0_2_44//:libc",
+        "@raze__libc__0_2_66//:libc",
     ],
     rustc_flags = [
         "--cap-lints=allow",

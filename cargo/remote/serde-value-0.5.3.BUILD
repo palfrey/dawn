@@ -31,8 +31,8 @@ rust_library(
     edition = "2015",
     srcs = glob(["**/*.rs"]),
     deps = [
-        "@raze__ordered_float__1_0_1//:ordered_float",
-        "@raze__serde__1_0_80//:serde",
+        "@raze__ordered_float__1_0_2//:ordered_float",
+        "@raze__serde__1_0_104//:serde",
     ],
     rustc_flags = [
         "--cap-lints=allow",

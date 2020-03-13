@@ -34,7 +34,6 @@ rust_library(
     edition = "2015",
     srcs = glob(["**/*.rs"]),
     deps = [
-        "@raze__encoding__0_2_33//:encoding",
         "@raze__idna__0_1_5//:idna",
         "@raze__matches__0_1_8//:matches",
         "@raze__percent_encoding__1_0_1//:percent_encoding",
@@ -44,8 +43,6 @@ rust_library(
     ],
     version = "1.7.2",
     crate_features = [
-        "encoding",
-        "query_encoding",
     ],
 )
 
