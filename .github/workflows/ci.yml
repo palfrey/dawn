@@ -1,0 +1,42 @@
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 1 * *'  
+
+name: CI
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly]
+        features: ["--features=lambda --no-default-features", ""]
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --allow-downgrades --no-install-recommends pkg-config libssl-dev
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v1
+      # - name: Check formatting
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     command: fmt
+      #     args: -- --check
+      - name: Build and test
+        uses: actions-rs/cargo@v1
+        env:
+          RUST_BACKTRACE: 1
+        with:
+          command: test
+          args:  ${{ matrix.features }} -- --nocapture
+      - name: Check HTTP response
+        if: ${{ matrix.features == '' }}
+        run: ./test.sh

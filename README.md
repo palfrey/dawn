@@ -1,6 +1,6 @@
 Dawn
 ====
-[![Build Status](https://travis-ci.com/palfrey/dawn.svg?branch=master)](https://travis-ci.com/palfrey/dawn)
+[![CI](https://github.com/palfrey/dawn/actions/workflows/ci.yml/badge.svg)](https://github.com/palfrey/dawn/actions/workflows/ci.yml)
 [![MSRV: 1.40.0](https://flat.badgen.net/badge/MSRV/1.40.0/purple)](https://blog.rust-lang.org/2019/12/19/Rust-1.40.0.html)
 
 Named both for the [NASA Dawn mission](http://dawn.jpl.nasa.gov/) and that it turned
