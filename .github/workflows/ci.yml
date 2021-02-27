@@ -32,7 +32,6 @@ jobs:
       #     args: -- --check
       - name: Build and test
         uses: actions-rs/cargo@v1
-        continue-on-error: ${{ matrix.rust == 'nightly' }}
         env:
           RUST_BACKTRACE: 1
         with:
@@ -40,5 +39,4 @@ jobs:
           args:  ${{ matrix.features }} -- --nocapture
       - name: Check HTTP response
         if: ${{ matrix.features == '' }}
-        continue-on-error: ${{ matrix.rust == 'nightly' }}
         run: ./test.sh
