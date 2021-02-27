@@ -40,3 +40,19 @@ jobs:
       - name: Check HTTP response
         if: ${{ matrix.features == '' }}
         run: ./test.sh
+  
+  bazel:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        
+      - name: Install Bazelisk
+        uses: tullyliu/bazelisk-action@1.2
+        with:
+          version: '1.7.5'
+          bazel-install-path: './.local/bin'
+          os: 'linux'
+        
+      - name: Bazel build
+        run: bazel build //:dawn
