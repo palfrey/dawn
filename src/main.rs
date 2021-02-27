@@ -1,10 +1,10 @@
-#[cfg(not(feature = "lambda"))]
-use actix_web::{App, HttpServer};
 use actix_web::{web, HttpRequest, HttpResponse};
 #[cfg(not(feature = "lambda"))]
-use std::env;
+use actix_web::{App, HttpServer};
 #[cfg(not(feature = "lambda"))]
 use log::info;
+#[cfg(not(feature = "lambda"))]
+use std::env;
 
 mod arrivals;
 mod common;
@@ -56,7 +56,7 @@ fn main() {
 mod tests {
     #[cfg(feature = "lambda")]
     use super::main;
-    use super::{config, common};
+    use super::{common, config};
     #[cfg(feature = "lambda")]
     use actix_lambda;
     use actix_web::{test, App};
@@ -70,9 +70,7 @@ mod tests {
     #[actix_rt::test]
     async fn simple_search() {
         env_logger::try_init().unwrap_or_default();
-        let srv = test::start_with(test::config().h1(), ||
-            App::new().configure(config)
-        );
+        let srv = test::start_with(test::config().h1(), || App::new().configure(config));
         common::set_client(common::ClientType::TESTING);
         let request = srv.get("/search?query=foo");
         let mut response = request.send().await.unwrap();
