@@ -42,7 +42,7 @@ rust_library(
     data = [],
     edition = "2015",
     proc_macro_deps = [
-        "@raze__serde_derive__1_0_104//:serde_derive",
+        "@raze__serde_derive__1_0_123//:serde_derive",
     ],
     rustc_flags = [
         "--cap-lints=allow",
@@ -55,13 +55,13 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         "@raze__base64__0_10_1//:base64",
-        "@raze__error_chain__0_12_1//:error_chain",
+        "@raze__error_chain__0_12_4//:error_chain",
         "@raze__http__0_1_21//:http",
-        "@raze__log__0_4_8//:log",
+        "@raze__log__0_4_14//:log",
         "@raze__reqwest__0_9_24//:reqwest",
-        "@raze__serde__1_0_104//:serde",
-        "@raze__serde_json__1_0_44//:serde_json",
-        "@raze__twox_hash__1_5_0//:twox_hash",
+        "@raze__serde__1_0_123//:serde",
+        "@raze__serde_json__1_0_63//:serde_json",
+        "@raze__twox_hash__1_6_0//:twox_hash",
     ],
 )
 

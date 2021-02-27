@@ -113,7 +113,7 @@ rust_library(
     deps = [
         ":parking_lot_core_build_script",
         "@raze__cfg_if__0_1_10//:cfg_if",
-        "@raze__smallvec__0_6_13//:smallvec",
+        "@raze__smallvec__0_6_14//:smallvec",
     ] + selects.with_or({
         # cfg(unix)
         (
@@ -134,7 +134,7 @@ rust_library(
             "@rules_rust//rust/platform:x86_64-unknown-freebsd",
             "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
         ): [
-            "@raze__libc__0_2_66//:libc",
+            "@raze__libc__0_2_86//:libc",
         ],
         "//conditions:default": [],
     }) + selects.with_or({
@@ -143,7 +143,7 @@ rust_library(
             "@rules_rust//rust/platform:i686-pc-windows-msvc",
             "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
         ): [
-            "@raze__winapi__0_3_8//:winapi",
+            "@raze__winapi__0_3_9//:winapi",
         ],
         "//conditions:default": [],
     }),

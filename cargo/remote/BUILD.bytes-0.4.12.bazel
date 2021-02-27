@@ -52,8 +52,8 @@ rust_library(
     version = "0.4.12",
     # buildifier: leave-alone
     deps = [
-        "@raze__byteorder__1_3_2//:byteorder",
-        "@raze__either__1_5_3//:either",
+        "@raze__byteorder__1_4_2//:byteorder",
+        "@raze__either__1_6_1//:either",
         "@raze__iovec__0_1_4//:iovec",
     ],
 )

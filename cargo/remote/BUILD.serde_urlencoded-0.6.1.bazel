@@ -49,10 +49,10 @@ rust_library(
     version = "0.6.1",
     # buildifier: leave-alone
     deps = [
-        "@raze__dtoa__0_4_4//:dtoa",
-        "@raze__itoa__0_4_4//:itoa",
-        "@raze__serde__1_0_104//:serde",
-        "@raze__url__2_1_0//:url",
+        "@raze__dtoa__0_4_7//:dtoa",
+        "@raze__itoa__0_4_7//:itoa",
+        "@raze__serde__1_0_123//:serde",
+        "@raze__url__2_2_1//:url",
     ],
 )
 

@@ -56,7 +56,7 @@ cargo_build_script(
     version = "0.3.2",
     visibility = ["//visibility:private"],
     deps = [
-        "@raze__cc__1_0_48//:cc",
+        "@raze__cc__1_0_67//:cc",
     ],
 )
 
@@ -80,6 +80,6 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         ":brotli_sys_build_script",
-        "@raze__libc__0_2_66//:libc",
+        "@raze__libc__0_2_86//:libc",
     ],
 )

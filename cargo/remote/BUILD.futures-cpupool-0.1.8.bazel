@@ -51,8 +51,8 @@ rust_library(
     version = "0.1.8",
     # buildifier: leave-alone
     deps = [
-        "@raze__futures__0_1_29//:futures",
-        "@raze__num_cpus__1_11_1//:num_cpus",
+        "@raze__futures__0_1_31//:futures",
+        "@raze__num_cpus__1_13_0//:num_cpus",
     ],
 )
 

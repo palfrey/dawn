@@ -51,8 +51,8 @@ rust_library(
     version = "0.2.0",
     # buildifier: leave-alone
     deps = [
-        "@raze__futures__0_1_29//:futures",
-        "@raze__log__0_4_8//:log",
-        "@raze__try_lock__0_2_2//:try_lock",
+        "@raze__futures__0_1_31//:futures",
+        "@raze__log__0_4_14//:log",
+        "@raze__try_lock__0_2_3//:try_lock",
     ],
 )

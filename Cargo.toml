@@ -39,13 +39,3 @@ panic = 'abort'
 [package.metadata.raze]
 genmode = "Remote"
 workspace_path = "//cargo"
-
-[package.metadata.raze.crates.mime_guess.'2.0.0-alpha.6']
-gen_buildrs = true
-
-[package.metadata.raze.crates.unicase.'1.4.2']
-additional_flags = [
-  # Rustc is 1.15, enable all optional settings
-  "--cfg=__unicase__iter_cmp",
-  "--cfg=__unicase__defauler_hasher",
-]

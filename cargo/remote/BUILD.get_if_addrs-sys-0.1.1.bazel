@@ -80,6 +80,6 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         ":get_if_addrs_sys_build_script",
-        "@raze__libc__0_2_66//:libc",
+        "@raze__libc__0_2_86//:libc",
     ],
 )

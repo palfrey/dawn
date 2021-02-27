@@ -51,7 +51,7 @@ rust_library(
     version = "0.12.0",
     # buildifier: leave-alone
     deps = [
-        "@raze__time__0_1_42//:time",
+        "@raze__time__0_1_44//:time",
         "@raze__url__1_7_2//:url",
     ],
 )

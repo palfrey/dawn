@@ -82,7 +82,7 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         ":parking_lot_build_script",
-        "@raze__lock_api__0_3_2//:lock_api",
+        "@raze__lock_api__0_3_4//:lock_api",
         "@raze__parking_lot_core__0_6_2//:parking_lot_core",
     ],
 )

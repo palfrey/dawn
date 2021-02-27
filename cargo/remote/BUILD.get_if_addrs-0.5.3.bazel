@@ -54,7 +54,7 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         "@raze__c_linked_list__1_1_1//:c_linked_list",
-        "@raze__libc__0_2_66//:libc",
+        "@raze__libc__0_2_86//:libc",
     ] + selects.with_or({
         # cfg(target_os = "android")
         (

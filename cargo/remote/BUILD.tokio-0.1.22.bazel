@@ -97,16 +97,16 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         "@raze__bytes__0_4_12//:bytes",
-        "@raze__futures__0_1_29//:futures",
-        "@raze__mio__0_6_21//:mio",
-        "@raze__num_cpus__1_11_1//:num_cpus",
-        "@raze__tokio_current_thread__0_1_6//:tokio_current_thread",
-        "@raze__tokio_executor__0_1_9//:tokio_executor",
-        "@raze__tokio_io__0_1_12//:tokio_io",
-        "@raze__tokio_reactor__0_1_11//:tokio_reactor",
-        "@raze__tokio_tcp__0_1_3//:tokio_tcp",
-        "@raze__tokio_threadpool__0_1_17//:tokio_threadpool",
-        "@raze__tokio_timer__0_2_12//:tokio_timer",
+        "@raze__futures__0_1_31//:futures",
+        "@raze__mio__0_6_23//:mio",
+        "@raze__num_cpus__1_13_0//:num_cpus",
+        "@raze__tokio_current_thread__0_1_7//:tokio_current_thread",
+        "@raze__tokio_executor__0_1_10//:tokio_executor",
+        "@raze__tokio_io__0_1_13//:tokio_io",
+        "@raze__tokio_reactor__0_1_12//:tokio_reactor",
+        "@raze__tokio_tcp__0_1_4//:tokio_tcp",
+        "@raze__tokio_threadpool__0_1_18//:tokio_threadpool",
+        "@raze__tokio_timer__0_2_13//:tokio_timer",
     ] + selects.with_or({
         # cfg(unix)
         (
