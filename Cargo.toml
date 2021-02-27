@@ -15,7 +15,7 @@ mustache = "0.8"
 itertools = "*"
 time = "<0.2"
 get_if_addrs = "*"
-cookie = "*"
+cookie = "0.12"
 serde = "1.0"
 serde_derive = "1.0"
 reqwest_mock = {optional=true, version="0.6"}
