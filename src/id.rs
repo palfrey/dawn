@@ -1,6 +1,6 @@
-use actix_web::{http::StatusCode, web::Path, web::Query, HttpResponse};
 use crate::common;
 use actix_web::http::header::LOCATION;
+use actix_web::{http::StatusCode, web::Path, web::Query, HttpResponse};
 use mustache::Data;
 use mustache::MapBuilder;
 use serde::Deserialize;

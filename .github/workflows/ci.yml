@@ -25,11 +25,11 @@ jobs:
           toolchain: ${{ matrix.rust }}
           components: rustfmt
       - uses: Swatinem/rust-cache@v1
-      # - name: Check formatting
-      #   uses: actions-rs/cargo@v1
-      #   with:
-      #     command: fmt
-      #     args: -- --check
+      - name: Check formatting
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: -- --check
       - name: Build and test
         uses: actions-rs/cargo@v1
         env:

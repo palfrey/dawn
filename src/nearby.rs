@@ -1,5 +1,5 @@
-use actix_web::{http::StatusCode, web::Query, HttpResponse};
 use crate::common;
+use actix_web::{http::StatusCode, web::Query, HttpResponse};
 use mustache::MapBuilder;
 use serde::Deserialize;
 
