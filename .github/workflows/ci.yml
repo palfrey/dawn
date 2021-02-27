@@ -36,8 +36,8 @@ jobs:
         env:
           RUST_BACKTRACE: 1
         with:
-          command: test ${{ matrix.features }}
-          args: -- --nocapture
+          command: test
+          args:  ${{ matrix.features }} -- --nocapture
       - name: Check HTTP response
         if: ${{ matrix.features == '' }}
         continue-on-error: ${{ matrix.rust == 'nightly' }}
