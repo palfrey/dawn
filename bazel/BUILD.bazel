@@ -5,6 +5,166 @@ cargo-raze generated Bazel file.
 DO NOT EDIT! Replaced on runs of cargo-raze
 """
 
+package(default_visibility = ["//visibility:public"])
+
+licenses([
+    "notice",  # See individual crates for specific licenses
+])
+
+# Aliased targets
+alias(
+    name = "actix_rt",
+    actual = "@raze__actix_rt__1_1_1//:actix_rt",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "actix_web",
+    actual = "@raze__actix_web__2_0_0//:actix_web",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "cookie",
+    actual = "@raze__cookie__0_12_0//:cookie",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "env_logger",
+    actual = "@raze__env_logger__0_8_3//:env_logger",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "get_if_addrs",
+    actual = "@raze__get_if_addrs__0_5_3//:get_if_addrs",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "hyper",
+    actual = "@raze__hyper__0_12_36//:hyper",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "itertools",
+    actual = "@raze__itertools__0_10_0//:itertools",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "json",
+    actual = "@raze__json__0_12_4//:json",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "lazy_static",
+    actual = "@raze__lazy_static__1_4_0//:lazy_static",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "log",
+    actual = "@raze__log__0_4_14//:log",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "log4rs",
+    actual = "@raze__log4rs__1_0_0//:log4rs",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "mustache",
+    actual = "@raze__mustache__0_8_2//:mustache",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "percent_encoding",
+    actual = "@raze__percent_encoding__1_0_1//:percent_encoding",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "reqwest_mock",
+    actual = "@raze__reqwest_mock__0_6_0//:reqwest_mock",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "serde",
+    actual = "@raze__serde__1_0_123//:serde",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "serde_derive",
+    actual = "@raze__serde_derive__1_0_123//:serde_derive",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "time",
+    actual = "@raze__time__0_1_44//:time",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
 # Export file for Stardoc support
 exports_files(
     [

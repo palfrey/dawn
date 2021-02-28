@@ -51,7 +51,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.cache/bazel
-          key: bazel        
+          key: ${{ runner.os }}-bazel-${{ hashFiles('bazel/crates.bzl') }}
         
       - name: Install Bazelisk
         uses: tullyliu/bazelisk-action@1.2
