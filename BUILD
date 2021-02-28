@@ -1,4 +1,4 @@
-load("@rules_rust//rust:rust.bzl", "rust_binary")
+load("@rules_rust//rust:rust.bzl", "rust_binary", "rust_test")
 load("@rules_rust//cargo:cargo_build_script.bzl", "cargo_build_script")
 
 alias(
@@ -38,8 +38,16 @@ rust_binary(
         "//cargo:json",
         "//cargo:percent_encoding",
         "//cargo:cookie",
+        "//cargo:env_logger",
         "reqwest",
         ":build_script",
     ],
     compile_data = TEMPLATES
+)
+
+
+rust_test(
+    name = "dawn_test",
+    crate = ":dawn",
+    compile_data = TEMPLATES # Known bug https://github.com/bazelbuild/rules_rust/issues/567
 )
