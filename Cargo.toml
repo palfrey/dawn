@@ -38,4 +38,4 @@ panic = 'abort'
 
 [package.metadata.raze]
 genmode = "Remote"
-workspace_path = "//cargo"
+workspace_path = "//bazel"

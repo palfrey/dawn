@@ -1,0 +1,96 @@
+"""
+@generated
+cargo-raze crate build file.
+
+DO NOT EDIT! Replaced on runs of cargo-raze
+"""
+
+# buildifier: disable=load
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+# buildifier: disable=load
+load(
+    "@rules_rust//rust:rust.bzl",
+    "rust_binary",
+    "rust_library",
+    "rust_test",
+)
+
+package(default_visibility = [
+    # Public for visibility by "@raze__crate__version//" targets.
+    #
+    # Prefer access through "//bazel", which limits external
+    # visibility to explicit Cargo.toml dependencies.
+    "//visibility:public",
+])
+
+licenses([
+    "notice",  # MIT from expression "MIT OR Apache-2.0"
+])
+
+# Generated Targets
+
+# Unsupported target "basic" with type "example" omitted
+
+# Unsupported target "client" with type "example" omitted
+
+# Unsupported target "uds" with type "example" omitted
+
+rust_library(
+    name = "actix_web",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+        "compress",
+        "default",
+        "failure",
+    ],
+    crate_root = "src/lib.rs",
+    crate_type = "lib",
+    data = [],
+    edition = "2018",
+    proc_macro_deps = [
+        "@raze__actix_macros__0_1_3//:actix_macros",
+        "@raze__actix_web_codegen__0_2_2//:actix_web_codegen",
+        "@raze__derive_more__0_99_11//:derive_more",
+    ],
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+    version = "2.0.0",
+    # buildifier: leave-alone
+    deps = [
+        "@raze__actix_codec__0_2_0//:actix_codec",
+        "@raze__actix_http__1_0_1//:actix_http",
+        "@raze__actix_router__0_2_7//:actix_router",
+        "@raze__actix_rt__1_1_1//:actix_rt",
+        "@raze__actix_server__1_0_4//:actix_server",
+        "@raze__actix_service__1_0_6//:actix_service",
+        "@raze__actix_testing__1_0_1//:actix_testing",
+        "@raze__actix_threadpool__0_3_3//:actix_threadpool",
+        "@raze__actix_tls__1_0_0//:actix_tls",
+        "@raze__actix_utils__1_0_6//:actix_utils",
+        "@raze__awc__1_0_1//:awc",
+        "@raze__bytes__0_5_6//:bytes",
+        "@raze__encoding_rs__0_8_28//:encoding_rs",
+        "@raze__futures__0_3_13//:futures",
+        "@raze__fxhash__0_2_1//:fxhash",
+        "@raze__log__0_4_14//:log",
+        "@raze__mime__0_3_16//:mime",
+        "@raze__net2__0_2_37//:net2",
+        "@raze__pin_project__0_4_27//:pin_project",
+        "@raze__regex__1_4_3//:regex",
+        "@raze__serde__1_0_123//:serde",
+        "@raze__serde_json__1_0_63//:serde_json",
+        "@raze__serde_urlencoded__0_6_1//:serde_urlencoded",
+        "@raze__time__0_1_44//:time",
+        "@raze__url__2_2_1//:url",
+    ],
+)
+
+# Unsupported target "test_httpserver" with type "test" omitted
+
+# Unsupported target "test_server" with type "test" omitted
