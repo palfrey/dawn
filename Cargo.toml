@@ -23,7 +23,7 @@ lazy_static = "1.2"
 env_logger = "*"
 actix_lambda = {optional=true, version="0.2"}
 reqwest = {optional=true, version="0.9", default-features=false}
-actix-rt = "*"
+actix-rt = "1.0"
 
 # Mocking doesn't work along with Lambda, as reqwest_mock needs an old version of reqwest, which needs OpenSSL
 # and compiling OpenSSL with musl is hard on a non-Linux box
