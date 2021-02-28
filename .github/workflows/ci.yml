@@ -62,3 +62,6 @@ jobs:
         
       - name: Bazel build
         run: bazel build //:dawn
+
+      - name: Bazel test
+        run: bazel test //:dawn_test        
