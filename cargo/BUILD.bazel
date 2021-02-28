@@ -14,7 +14,7 @@ licenses([
 # Aliased targets
 alias(
     name = "actix_rt",
-    actual = "@raze__actix_rt__2_1_0//:actix_rt",
+    actual = "@raze__actix_rt__1_1_1//:actix_rt",
     tags = [
         "cargo-raze",
         "manual",
