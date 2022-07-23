@@ -5,10 +5,8 @@ use lazy_static::lazy_static;
 use mustache;
 use mustache::MapBuilder;
 use percent_encoding;
-#[cfg(feature = "mocking")]
 use reqwest_mock::Client;
 use std::collections::HashMap;
-#[cfg(feature = "mocking")]
 use std::ops::Deref;
 use std::sync::Mutex;
 
@@ -35,7 +33,6 @@ pub fn set_client(ct: ClientType) {
     CLIENT.lock().unwrap().replace(ct);
 }
 
-#[cfg(feature = "mocking")]
 fn get_data(url: &String) -> Result<String, String> {
     let client = match CLIENT.lock().unwrap().deref() {
         Some(ClientType::LIVE) => reqwest_mock::client::GenericClient::direct(),
@@ -50,13 +47,6 @@ fn get_data(url: &String) -> Result<String, String> {
         }
     };
     return res.body_to_utf8().map_err(|e| format!("{:?}", e));
-}
-
-#[cfg(not(feature = "mocking"))]
-fn get_data(url: &String) -> Result<String, String> {
-    return reqwest::get(url)
-        .and_then(|mut r| r.text())
-        .map_err(|e| format!("{:?}", e));
 }
 
 pub fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
