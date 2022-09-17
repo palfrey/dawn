@@ -46,6 +46,7 @@ cargo_build_script(
     crate_root = "build/main.rs",
     data = glob(["**"]),
     edition = "2015",
+    links = "openssl",
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -62,14 +63,15 @@ cargo_build_script(
     ] + selects.with_or({
         # cfg(target_env = "msvc")
         (
-            "@rules_rust//rust/platform:i686-pc-windows-msvc",
-            "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
+          "@rules_rust//rust/platform:i686-pc-windows-msvc",
+          "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
         ): [
             "@raze__vcpkg__0_2_11//:vcpkg",
         ],
         "//conditions:default": [],
     }),
 )
+
 
 rust_library(
     name = "openssl_sys",
@@ -93,12 +95,12 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         ":openssl_sys_build_script",
-        "@raze__libc__0_2_86//:libc",
+        "@raze__libc__0_2_126//:libc",
     ] + selects.with_or({
         # cfg(target_env = "msvc")
         (
-            "@rules_rust//rust/platform:i686-pc-windows-msvc",
-            "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
+          "@rules_rust//rust/platform:i686-pc-windows-msvc",
+          "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
         ): [
         ],
         "//conditions:default": [],

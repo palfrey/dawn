@@ -34,8 +34,6 @@ rust_library(
     name = "cookie",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "percent-encode",
-        "url",
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
@@ -52,6 +50,5 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         "@raze__time__0_1_44//:time",
-        "@raze__url__1_7_2//:url",
     ],
 )

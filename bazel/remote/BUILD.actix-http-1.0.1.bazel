@@ -89,7 +89,7 @@ rust_library(
         "@raze__fxhash__0_2_1//:fxhash",
         "@raze__h2__0_2_7//:h2",
         "@raze__http__0_2_3//:http",
-        "@raze__httparse__1_3_5//:httparse",
+        "@raze__httparse__1_7_1//:httparse",
         "@raze__indexmap__1_6_1//:indexmap",
         "@raze__language_tags__0_2_2//:language_tags",
         "@raze__lazy_static__1_4_0//:lazy_static",

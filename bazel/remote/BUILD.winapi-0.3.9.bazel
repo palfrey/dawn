@@ -53,7 +53,6 @@ cargo_build_script(
         "minwinbase",
         "minwindef",
         "ntdef",
-        "ntsecapi",
         "ntstatus",
         "processenv",
         "processthreadsapi",
@@ -91,6 +90,7 @@ cargo_build_script(
     ],
 )
 
+
 rust_library(
     name = "winapi",
     srcs = glob(["**/*.rs"]),
@@ -106,7 +106,6 @@ rust_library(
         "minwinbase",
         "minwindef",
         "ntdef",
-        "ntsecapi",
         "ntstatus",
         "processenv",
         "processthreadsapi",

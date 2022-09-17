@@ -3,7 +3,7 @@ load("@rules_rust//cargo:cargo_build_script.bzl", "cargo_build_script")
 
 alias(
     name = "reqwest",
-    actual = "@raze__reqwest__0_9_24//:reqwest",
+    actual = "@raze__reqwest__0_10_10//:reqwest",
     tags = [
         "cargo-raze",
         "manual",
@@ -39,6 +39,7 @@ rust_binary(
         "//bazel:percent_encoding",
         "//bazel:cookie",
         "//bazel:env_logger",
+        "//bazel:reqwest_mock",
         "reqwest",
         ":build_script",
     ],

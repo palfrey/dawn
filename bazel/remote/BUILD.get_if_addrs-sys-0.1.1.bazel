@@ -46,6 +46,7 @@ cargo_build_script(
     crate_root = "build.rs",
     data = glob(["**"]),
     edition = "2015",
+    links = "ifaddrs",
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -59,6 +60,7 @@ cargo_build_script(
         "@raze__gcc__0_3_55//:gcc",
     ],
 )
+
 
 rust_library(
     name = "get_if_addrs_sys",
@@ -80,6 +82,6 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         ":get_if_addrs_sys_build_script",
-        "@raze__libc__0_2_86//:libc",
+        "@raze__libc__0_2_126//:libc",
     ],
 )

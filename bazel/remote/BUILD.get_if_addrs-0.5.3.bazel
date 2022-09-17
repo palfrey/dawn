@@ -54,13 +54,13 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         "@raze__c_linked_list__1_1_1//:c_linked_list",
-        "@raze__libc__0_2_86//:libc",
+        "@raze__libc__0_2_126//:libc",
     ] + selects.with_or({
         # cfg(target_os = "android")
         (
-            "@rules_rust//rust/platform:aarch64-linux-android",
-            "@rules_rust//rust/platform:i686-linux-android",
-            "@rules_rust//rust/platform:x86_64-linux-android",
+          "@rules_rust//rust/platform:aarch64-linux-android",
+          "@rules_rust//rust/platform:i686-linux-android",
+          "@rules_rust//rust/platform:x86_64-linux-android",
         ): [
             "@raze__get_if_addrs_sys__0_1_1//:get_if_addrs_sys",
         ],
@@ -68,8 +68,8 @@ rust_library(
     }) + selects.with_or({
         # cfg(target_os = "windows")
         (
-            "@rules_rust//rust/platform:i686-pc-windows-msvc",
-            "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
+          "@rules_rust//rust/platform:i686-pc-windows-msvc",
+          "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
         ): [
             "@raze__winapi__0_2_8//:winapi",
         ],

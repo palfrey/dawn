@@ -33,8 +33,6 @@ licenses([
 rust_library(
     name = "instant",
     srcs = glob(["**/*.rs"]),
-    aliases = {
-    },
     crate_features = [
     ],
     crate_root = "src/lib.rs",
@@ -52,14 +50,7 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         "@raze__cfg_if__1_0_0//:cfg_if",
-    ] + selects.with_or({
-        # wasm32-unknown-unknown
-        (
-            "@rules_rust//rust/platform:wasm32-unknown-unknown",
-        ): [
-        ],
-        "//conditions:default": [],
-    }),
+    ],
 )
 
 # Unsupported target "wasm" with type "test" omitted

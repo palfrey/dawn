@@ -37,8 +37,6 @@ licenses([
 rust_library(
     name = "tracing",
     srcs = glob(["**/*.rs"]),
-    aliases = {
-    },
     crate_features = [
         "log",
         "std",
@@ -61,15 +59,7 @@ rust_library(
         "@raze__log__0_4_14//:log",
         "@raze__pin_project_lite__0_2_4//:pin_project_lite",
         "@raze__tracing_core__0_1_17//:tracing_core",
-    ] + selects.with_or({
-        # cfg(target_arch = "wasm32")
-        (
-            "@rules_rust//rust/platform:wasm32-unknown-unknown",
-            "@rules_rust//rust/platform:wasm32-wasi",
-        ): [
-        ],
-        "//conditions:default": [],
-    }),
+    ],
 )
 
 # Unsupported target "event" with type "test" omitted

@@ -58,15 +58,6 @@ alias(
 )
 
 alias(
-    name = "hyper",
-    actual = "@raze__hyper__0_12_36//:hyper",
-    tags = [
-        "cargo-raze",
-        "manual",
-    ],
-)
-
-alias(
     name = "itertools",
     actual = "@raze__itertools__0_10_0//:itertools",
     tags = [
@@ -94,8 +85,8 @@ alias(
 )
 
 alias(
-    name = "log",
-    actual = "@raze__log__0_4_14//:log",
+    name = "log4rs",
+    actual = "@raze__log4rs__1_0_0//:log4rs",
     tags = [
         "cargo-raze",
         "manual",
@@ -103,8 +94,8 @@ alias(
 )
 
 alias(
-    name = "log4rs",
-    actual = "@raze__log4rs__1_0_0//:log4rs",
+    name = "log",
+    actual = "@raze__log__0_4_14//:log",
     tags = [
         "cargo-raze",
         "manual",
@@ -131,7 +122,7 @@ alias(
 
 alias(
     name = "reqwest_mock",
-    actual = "@raze__reqwest_mock__0_6_0//:reqwest_mock",
+    actual = "@raze__reqwest_mock__0_7_0//:reqwest_mock",
     tags = [
         "cargo-raze",
         "manual",
@@ -164,6 +155,7 @@ alias(
         "manual",
     ],
 )
+
 
 # Export file for Stardoc support
 exports_files(
