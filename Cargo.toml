@@ -40,3 +40,15 @@ panic = 'abort'
 genmode = "Remote"
 workspace_path = "//bazel"
 package_aliases_dir = "bazel"
+
+[package.metadata.raze.crates.ring.'*']
+compile_data_attr = "glob([\"**/*.der\"])"
+
+[package.metadata.raze.crates.webpki.'*']
+compile_data_attr = "glob([\"**/*.der\"])"
+
+[package.metadata.raze.crates.deadpool.'*']
+compile_data_attr ="[\"README.md\"]"
+
+[package.metadata.raze.crates.deadpool-runtime.'*']
+compile_data_attr ="[\"README.md\"]"

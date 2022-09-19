@@ -46,6 +46,7 @@ rust_library(
     crate_root = "src/lib.rs",
     crate_type = "lib",
     data = [],
+    compile_data = ["README.md"],
     edition = "2018",
     proc_macro_deps = [
         "@raze__async_trait__0_1_42//:async_trait",

@@ -54,7 +54,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use std::fs::File;
+    use std::fs::{File, create_dir};
     use std::path::PathBuf;
     use std::thread;
 
@@ -89,6 +89,9 @@ mod tests {
             .respond_with(|req: &Request| {
                 let mut data_path = PathBuf::new();
                 data_path.push("tests");
+                if !data_path.exists() {
+                    create_dir(&data_path).unwrap();
+                }
                 data_path.push(
                     &format!(
                         "{}-query-{}.json",
