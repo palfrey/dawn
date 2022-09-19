@@ -19,7 +19,7 @@ serde = "1.0"
 serde_derive = "1.0"
 lazy_static = "1.2"
 env_logger = "*"
-actix_lambda = {optional=true, version="0.2"}
+#actix_lambda = {optional=true, version="0.2"}
 reqwest = {version="0.11", default-features=false, features=["rustls-tls", "blocking"]}
 actix-rt = "2.7"
 
@@ -30,7 +30,7 @@ serde_json = "1"
 
 [features]
 default = []
-lambda = ["actix_lambda"]
+#lambda = ["actix_lambda"]
 
 [profile.release]
 lto = true
