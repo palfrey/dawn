@@ -67,15 +67,6 @@ alias(
 )
 
 alias(
-    name = "json",
-    actual = "@raze__json__0_12_4//:json",
-    tags = [
-        "cargo-raze",
-        "manual",
-    ],
-)
-
-alias(
     name = "lazy_static",
     actual = "@raze__lazy_static__1_4_0//:lazy_static",
     tags = [
@@ -104,7 +95,7 @@ alias(
 
 alias(
     name = "mustache",
-    actual = "@raze__mustache__0_8_2//:mustache",
+    actual = "@raze__mustache__0_9_0//:mustache",
     tags = [
         "cargo-raze",
         "manual",

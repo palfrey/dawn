@@ -943,16 +943,6 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
-        name = "raze__json__0_12_4",
-        url = "https://crates.io/api/v1/crates/json/0.12.4/download",
-        type = "tar.gz",
-        sha256 = "078e285eafdfb6c4b434e0d31e8cfcb5115b651496faca5749b88fafd4f23bfd",
-        strip_prefix = "json-0.12.4",
-        build_file = Label("//bazel/remote:BUILD.json-0.12.4.bazel"),
-    )
-
-    maybe(
-        http_archive,
         name = "raze__language_tags__0_3_2",
         url = "https://crates.io/api/v1/crates/language-tags/0.3.2/download",
         type = "tar.gz",
@@ -1133,12 +1123,12 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
-        name = "raze__mustache__0_8_2",
-        url = "https://crates.io/api/v1/crates/mustache/0.8.2/download",
+        name = "raze__mustache__0_9_0",
+        url = "https://crates.io/api/v1/crates/mustache/0.9.0/download",
         type = "tar.gz",
-        sha256 = "ddb004e419334fc9172d0a5ff91c0770bdd6239091b0b343eb5926101f0a7d13",
-        strip_prefix = "mustache-0.8.2",
-        build_file = Label("//bazel/remote:BUILD.mustache-0.8.2.bazel"),
+        sha256 = "51956ef1c5d20a1384524d91e616fb44dfc7d8f249bf696d49c97dd3289ecab5",
+        strip_prefix = "mustache-0.9.0",
+        build_file = Label("//bazel/remote:BUILD.mustache-0.9.0.bazel"),
     )
 
     maybe(
@@ -1479,16 +1469,6 @@ def raze_fetch_remote_crates():
         sha256 = "3053cf52e236a3ed746dfc745aa9cacf1b791d846bdaf412f60a8d7d6e17c8fc",
         strip_prefix = "ring-0.16.20",
         build_file = Label("//bazel/remote:BUILD.ring-0.16.20.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "raze__rustc_serialize__0_3_24",
-        url = "https://crates.io/api/v1/crates/rustc-serialize/0.3.24/download",
-        type = "tar.gz",
-        sha256 = "dcf128d1287d2ea9d80910b5f1120d0b8eede3fbf1abe91c40d39ea7d51e6fda",
-        strip_prefix = "rustc-serialize-0.3.24",
-        build_file = Label("//bazel/remote:BUILD.rustc-serialize-0.3.24.bazel"),
     )
 
     maybe(

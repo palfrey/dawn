@@ -26,7 +26,6 @@ rust_binary(
         "//bazel:time",
         "//bazel:mustache",
         "//bazel:itertools",
-        "//bazel:json",
         "//bazel:percent_encoding",
         "//bazel:cookie",
         "//bazel:env_logger",
