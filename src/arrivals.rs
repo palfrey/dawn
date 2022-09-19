@@ -12,14 +12,14 @@ pub struct ArrivalsQuery {
     line: Option<String>,
 }
 
-pub fn arrivals_handler(
+pub async fn arrivals_handler(
     (req, path, query): (HttpRequest, Path<(String,)>, Query<ArrivalsQuery>),
 ) -> HttpResponse {
     let favourites = common::favourites(&req);
     let stopid = &path.0;
     let line_filter = &query.line;
     let mut response = HttpResponse::Ok();
-    let obj = match common::json_for_url(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals", stopid)) {
+    let obj = match common::json_for_url(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals", stopid)).await {
         Ok(val) => val,
         Err(val) => {
             response.status(StatusCode::BAD_GATEWAY);
@@ -34,7 +34,7 @@ pub fn arrivals_handler(
     }
     let data = {
         if member_slice.len() == 0 {
-            let stopobj = match common::json_for_url(&format!("https://api.tfl.gov.uk/StopPoint/{}", stopid))
+            let stopobj = match common::json_for_url(&format!("https://api.tfl.gov.uk/StopPoint/{}", stopid)).await
             {
                 Ok(val) => val,
                 Err(val) => {

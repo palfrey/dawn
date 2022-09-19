@@ -5,7 +5,7 @@ authors = ["Tom Parker-Shemilt <palfrey@tevp.net>"]
 edition = "2018"
 
 [dependencies]
-actix-web = "2"
+actix-web = "4"
 percent-encoding = "1"
 log = ">=0.4.5"
 json = "*"
@@ -14,19 +14,23 @@ mustache = "0.8"
 itertools = "*"
 time = "<0.2"
 get_if_addrs = "*"
-cookie = "0.12"
+cookie = "0.16"
 serde = "1.0"
 serde_derive = "1.0"
-reqwest_mock = {version="0.7"}
 lazy_static = "1.2"
 env_logger = "*"
 actix_lambda = {optional=true, version="0.2"}
-reqwest = {optional=true, version="0.11", default-features=false}
-actix-rt = "1.0"
+reqwest = {version="0.11", default-features=false, features=["rustls-tls", "blocking"]}
+actix-rt = "2.7"
+
+[dev-dependencies]
+wiremock = "0.5"
+tokio = {version="1", features=["rt", "macros"]}
+serde_json = "1"
 
 [features]
 default = []
-lambda = ["actix_lambda", "reqwest"]
+lambda = ["actix_lambda"]
 
 [profile.release]
 lto = true
