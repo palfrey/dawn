@@ -23,8 +23,8 @@ pub async fn search_handler(request: Query<SearchQuery>) -> HttpResponse {
         }
     };
 
-    if obj["matches"].members().count() == 1 {
-        let stop = obj["matches"].members().nth(0).unwrap();
+    if obj["matches"].as_array().unwrap().len() == 1 {
+        let stop = &obj["matches"].as_array().unwrap()[0];
         let mut response = HttpResponse::Ok();
         response.append_header((LOCATION, format!("/id/{}", stop["id"].as_str().unwrap())));
         response.status(StatusCode::PERMANENT_REDIRECT);
@@ -33,7 +33,7 @@ pub async fn search_handler(request: Query<SearchQuery>) -> HttpResponse {
     let data = MapBuilder::new()
         .insert_vec("stops", |vecbuilder| {
             let mut vecb = vecbuilder;
-            for stop in obj["matches"].members() {
+            for stop in obj["matches"].as_array().unwrap() {
                 vecb = vecb.push_map(|mapbuilder| {
                     let name = stop["name"].as_str().unwrap();
                     mapbuilder
