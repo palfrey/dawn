@@ -6,7 +6,6 @@ use log::info;
 #[cfg(not(feature = "lambda"))]
 use std::env;
 
-
 mod arrivals;
 mod common;
 mod favourite;
@@ -65,9 +64,9 @@ mod tests {
     #[cfg(feature = "lambda")]
     use actix_lambda;
     use actix_web::{test, App};
-    use serde::{Serialize, Deserialize};
-    use wiremock::{MockServer, Mock, Request, ResponseTemplate};
+    use serde::{Deserialize, Serialize};
     use wiremock::matchers::any;
+    use wiremock::{Mock, MockServer, Request, ResponseTemplate};
 
     #[cfg(feature = "lambda")]
     #[test]
@@ -78,7 +77,7 @@ mod tests {
     #[derive(Serialize, Deserialize, Debug)]
     struct StoredResponse {
         response_code: u16,
-        content: String
+        content: String,
     }
 
     #[tokio::test]
@@ -87,31 +86,44 @@ mod tests {
         let app = test::init_service(App::new().configure(config)).await;
         let mock_server = MockServer::start().await;
         Mock::given(any())
-        .respond_with(|req: &Request| {
-            let mut data_path = PathBuf::new();
-            data_path.push("tests");
-            data_path.push(&format!("{}-query-{}.json", req.url.path(), req.url.query().unwrap_or("None")).replace("/", "_")[1..]);
-            if !data_path.exists() {
-                let url = format!("https://api.tfl.gov.uk{}?{}", req.url.path(), req.url.query().unwrap_or(""));
-                let local_data_path = data_path.to_string_lossy().to_string();
-                thread::spawn(move || {
-                    let real_data = reqwest::blocking::get(url).unwrap();
-                    let sr= StoredResponse {
-                        response_code: real_data.status().as_u16(),
-                        content: real_data.text().unwrap()
-                    };
-                    serde_json::to_writer(File::create(local_data_path).unwrap(), &sr).unwrap();
-                }).join().unwrap();
-            }
-            let sr: StoredResponse = serde_json::from_reader(File::open(&data_path).unwrap()).unwrap();
-            ResponseTemplate::new(sr.response_code).set_body_string(sr.content)
-        })
-        .mount(&mock_server)
-        .await;        
+            .respond_with(|req: &Request| {
+                let mut data_path = PathBuf::new();
+                data_path.push("tests");
+                data_path.push(
+                    &format!(
+                        "{}-query-{}.json",
+                        req.url.path(),
+                        req.url.query().unwrap_or("None")
+                    )
+                    .replace("/", "_")[1..],
+                );
+                if !data_path.exists() {
+                    let url = format!(
+                        "https://api.tfl.gov.uk{}?{}",
+                        req.url.path(),
+                        req.url.query().unwrap_or("")
+                    );
+                    let local_data_path = data_path.to_string_lossy().to_string();
+                    thread::spawn(move || {
+                        let real_data = reqwest::blocking::get(url).unwrap();
+                        let sr = StoredResponse {
+                            response_code: real_data.status().as_u16(),
+                            content: real_data.text().unwrap(),
+                        };
+                        serde_json::to_writer(File::create(local_data_path).unwrap(), &sr).unwrap();
+                    })
+                    .join()
+                    .unwrap();
+                }
+                let sr: StoredResponse = serde_json::from_reader(File::open(&data_path).unwrap()).unwrap();
+                ResponseTemplate::new(sr.response_code).set_body_string(sr.content)
+            })
+            .mount(&mock_server)
+            .await;
         common::set_client(&mock_server.uri());
         let request = test::TestRequest::with_uri("/search?query=foo").to_request();
         let response = test::call_service(&app, request).await;
-        assert!(response.status().is_success(), "{}", response.status());        
+        assert!(response.status().is_success(), "{}", response.status());
         let body = String::from_utf8(test::read_body(response).await.to_vec()).unwrap();
         assert!(body.find("<title>Search: foo</title>").is_some(), "{}", body);
     }

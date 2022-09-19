@@ -6,8 +6,8 @@ use mustache;
 use mustache::MapBuilder;
 use percent_encoding;
 use std::collections::HashMap;
-use std::sync::Mutex;
 use std::ops::Deref;
+use std::sync::Mutex;
 
 lazy_static! {
     static ref TEMPLATES: HashMap<&'static str, &'static str> = {

@@ -26,9 +26,9 @@ pub async fn id_handler((path, query): (Path<(String,)>, Query<IdQuery>)) -> Htt
     let mut early_quit = false;
     let mut first_arrivals: HashMap<String, JsonValue> = HashMap::new();
     for naptan_id in obj["lineGroup"]
-    .members()
-    .into_iter()
-    .map(|x| x["naptanIdReference"].as_str().unwrap_or(""))
+        .members()
+        .into_iter()
+        .map(|x| x["naptanIdReference"].as_str().unwrap_or(""))
     {
         if naptan_id == "" {
             continue;
@@ -36,15 +36,17 @@ pub async fn id_handler((path, query): (Path<(String,)>, Query<IdQuery>)) -> Htt
         let stopobj = match common::json_for_url(&format!(
             "https://api.tfl.gov.uk/StopPoint/{}/Arrivals",
             naptan_id
-        )).await {
+        ))
+        .await
+        {
             Ok(val) => val,
             Err(_) => continue,
-        };    
+        };
         let first_arrival = stopobj.members().nth(0);
         if let Some(val) = first_arrival {
             first_arrivals.insert(naptan_id.to_string(), val.clone());
         }
-    };
+    }
     let data = MapBuilder::new()
         .insert_vec("stops", |vecbuilder| {
             let mut vecb = vecbuilder;

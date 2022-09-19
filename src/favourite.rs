@@ -1,8 +1,8 @@
 use crate::common;
 use actix_web::http::header::LOCATION;
-use actix_web::{HttpResponseBuilder, http::StatusCode, web::Form, HttpRequest, HttpResponse};
-use cookie::Cookie as CookiePair;
+use actix_web::{http::StatusCode, web::Form, HttpRequest, HttpResponse, HttpResponseBuilder};
 use cookie::time;
+use cookie::Cookie as CookiePair;
 use json;
 use mustache::MapBuilder;
 use serde::Deserialize;
@@ -13,7 +13,7 @@ fn set_cookie(response: &mut HttpResponseBuilder, existing: json::JsonValue) {
             .expires(time::OffsetDateTime::now_utc() + time::Duration::days(365))
             .secure(false)
             .http_only(false)
-            .finish()
+            .finish(),
     );
     response.append_header((LOCATION, "/favourites"));
     response.status(StatusCode::FOUND);

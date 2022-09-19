@@ -19,13 +19,14 @@ pub async fn arrivals_handler(
     let stopid = &path.0;
     let line_filter = &query.line;
     let mut response = HttpResponse::Ok();
-    let obj = match common::json_for_url(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals", stopid)).await {
-        Ok(val) => val,
-        Err(val) => {
-            response.status(StatusCode::BAD_GATEWAY);
-            return response.body(val);
-        }
-    };
+    let obj =
+        match common::json_for_url(&format!("https://api.tfl.gov.uk/StopPoint/{}/Arrivals", stopid)).await {
+            Ok(val) => val,
+            Err(val) => {
+                response.status(StatusCode::BAD_GATEWAY);
+                return response.body(val);
+            }
+        };
     let members = obj.members();
     let member_slice = members.as_slice();
     if member_slice.is_empty() {
@@ -34,14 +35,14 @@ pub async fn arrivals_handler(
     }
     let data = {
         if member_slice.len() == 0 {
-            let stopobj = match common::json_for_url(&format!("https://api.tfl.gov.uk/StopPoint/{}", stopid)).await
-            {
-                Ok(val) => val,
-                Err(val) => {
-                    response.status(StatusCode::BAD_GATEWAY);
-                    return response.body(val);
-                }
-            };
+            let stopobj =
+                match common::json_for_url(&format!("https://api.tfl.gov.uk/StopPoint/{}", stopid)).await {
+                    Ok(val) => val,
+                    Err(val) => {
+                        response.status(StatusCode::BAD_GATEWAY);
+                        return response.body(val);
+                    }
+                };
             MapBuilder::new()
                 .insert_str("stopName", stopobj["commonName"].as_str().expect("commonName"))
                 .insert_str("stopNumber", "".to_string())
