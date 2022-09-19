@@ -34,6 +34,7 @@ rust_library(
     name = "futures_io",
     srcs = glob(["**/*.rs"]),
     crate_features = [
+        "default",
         "std",
     ],
     crate_root = "src/lib.rs",

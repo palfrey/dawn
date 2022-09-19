@@ -1,14 +1,14 @@
 load("@rules_rust//rust:rust.bzl", "rust_binary", "rust_test")
 load("@rules_rust//cargo:cargo_build_script.bzl", "cargo_build_script")
 
-alias(
-    name = "reqwest",
-    actual = "@raze__reqwest__0_10_10//:reqwest",
-    tags = [
-        "cargo-raze",
-        "manual",
-    ],
-)
+# alias(
+#     name = "reqwest",
+#     actual = "@raze__reqwest__0_10_10//:reqwest",
+#     tags = [
+#         "cargo-raze",
+#         "manual",
+#     ],
+# )
 
 TEMPLATES = glob(["resources/templates/*.mustache"])
 
@@ -39,8 +39,7 @@ rust_binary(
         "//bazel:percent_encoding",
         "//bazel:cookie",
         "//bazel:env_logger",
-        "//bazel:reqwest_mock",
-        "reqwest",
+        "//bazel:reqwest",
         ":build_script",
     ],
     compile_data = TEMPLATES

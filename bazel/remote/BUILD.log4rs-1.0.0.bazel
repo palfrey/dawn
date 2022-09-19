@@ -98,7 +98,7 @@ rust_library(
         "@raze__log__0_4_14//:log",
         "@raze__log_mdc__0_1_0//:log_mdc",
         "@raze__parking_lot__0_11_1//:parking_lot",
-        "@raze__regex__1_4_3//:regex",
+        "@raze__regex__1_6_0//:regex",
         "@raze__serde__1_0_123//:serde",
         "@raze__serde_json__1_0_63//:serde_json",
         "@raze__serde_value__0_7_0//:serde_value",

@@ -43,9 +43,6 @@ cargo_build_script(
     },
     crate_features = [
         "default",
-        "serde",
-        "serde-serialize",
-        "serde_json",
         "spans",
         "std",
     ],
@@ -71,9 +68,6 @@ rust_library(
     srcs = glob(["**/*.rs"]),
     crate_features = [
         "default",
-        "serde",
-        "serde-serialize",
-        "serde_json",
         "spans",
         "std",
     ],
@@ -96,8 +90,6 @@ rust_library(
     deps = [
         ":wasm_bindgen_build_script",
         "@raze__cfg_if__1_0_0//:cfg_if",
-        "@raze__serde__1_0_123//:serde",
-        "@raze__serde_json__1_0_63//:serde_json",
     ],
 )
 

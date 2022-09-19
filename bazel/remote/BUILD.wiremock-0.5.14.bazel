@@ -1,0 +1,79 @@
+"""
+@generated
+cargo-raze crate build file.
+
+DO NOT EDIT! Replaced on runs of cargo-raze
+"""
+
+# buildifier: disable=load
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+# buildifier: disable=load
+load(
+    "@rules_rust//rust:rust.bzl",
+    "rust_binary",
+    "rust_library",
+    "rust_test",
+)
+
+package(default_visibility = [
+    # Public for visibility by "@raze__crate__version//" targets.
+    #
+    # Prefer access through "//bazel", which limits external
+    # visibility to explicit Cargo.toml dependencies.
+    "//visibility:public",
+])
+
+licenses([
+    "notice",  # MIT from expression "MIT OR Apache-2.0"
+])
+
+# Generated Targets
+
+rust_library(
+    name = "wiremock",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+    ],
+    crate_root = "src/lib.rs",
+    crate_type = "lib",
+    data = [],
+    edition = "2018",
+    proc_macro_deps = [
+        "@raze__async_trait__0_1_42//:async_trait",
+    ],
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+    version = "0.5.14",
+    # buildifier: leave-alone
+    deps = [
+        "@raze__assert_json_diff__2_0_2//:assert_json_diff",
+        "@raze__base64__0_13_0//:base64",
+        "@raze__deadpool__0_9_5//:deadpool",
+        "@raze__futures__0_3_13//:futures",
+        "@raze__futures_timer__3_0_2//:futures_timer",
+        "@raze__http_types__2_12_0//:http_types",
+        "@raze__hyper__0_14_20//:hyper",
+        "@raze__log__0_4_14//:log",
+        "@raze__once_cell__1_14_0//:once_cell",
+        "@raze__regex__1_6_0//:regex",
+        "@raze__serde__1_0_123//:serde",
+        "@raze__serde_json__1_0_63//:serde_json",
+        "@raze__tokio__1_16_1//:tokio",
+    ],
+)
+
+# Unsupported target "mocks" with type "test" omitted
+
+# Unsupported target "priority" with type "test" omitted
+
+# Unsupported target "request_header_matching" with type "test" omitted
+
+# Unsupported target "timeout" with type "test" omitted
+
+# Unsupported target "tokio" with type "test" omitted
