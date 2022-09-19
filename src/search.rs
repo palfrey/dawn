@@ -9,12 +9,12 @@ pub struct SearchQuery {
     query: String,
 }
 
-pub fn search_handler(request: Query<SearchQuery>) -> HttpResponse {
+pub async fn search_handler(request: Query<SearchQuery>) -> HttpResponse {
     let url = &format!(
         "https://api.tfl.gov.uk/StopPoint/Search/{}?modes=bus,replacement-bus",
         &request.query
     );
-    let obj = match common::json_for_url(url) {
+    let obj = match common::json_for_url(url).await {
         Ok(val) => val,
         Err(val) => {
             let mut response = HttpResponse::Ok();
@@ -26,7 +26,7 @@ pub fn search_handler(request: Query<SearchQuery>) -> HttpResponse {
     if obj["matches"].members().count() == 1 {
         let stop = obj["matches"].members().nth(0).unwrap();
         let mut response = HttpResponse::Ok();
-        response.header(LOCATION, format!("/id/{}", stop["id"].as_str().unwrap()));
+        response.append_header((LOCATION, format!("/id/{}", stop["id"].as_str().unwrap())));
         response.status(StatusCode::PERMANENT_REDIRECT);
         return response.body("");
     }

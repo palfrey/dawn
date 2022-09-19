@@ -1,14 +1,11 @@
 use actix_web::http::header::CONTENT_TYPE;
-use actix_web::{HttpMessage, HttpRequest, HttpResponse};
+use actix_web::{HttpRequest, HttpResponse};
 use json;
 use lazy_static::lazy_static;
 use mustache;
 use mustache::MapBuilder;
 use percent_encoding;
-#[cfg(feature = "mocking")]
-use reqwest_mock::Client;
 use std::collections::HashMap;
-#[cfg(feature = "mocking")]
 use std::ops::Deref;
 use std::sync::Mutex;
 
@@ -20,47 +17,32 @@ lazy_static! {
     };
 }
 
-pub enum ClientType {
-    LIVE,
-    #[cfg(test)]
-    TESTING,
-}
-
 lazy_static! {
-    static ref CLIENT: Mutex<Option<ClientType>> = Mutex::new(Some(ClientType::LIVE));
+    static ref TFL_ROOT: Mutex<Option<String>> = Mutex::new(None);
 }
 
 #[cfg(test)]
-pub fn set_client(ct: ClientType) {
-    CLIENT.lock().unwrap().replace(ct);
+pub fn set_client(new_tfl_root: &str) {
+    let _ = TFL_ROOT.lock().unwrap().insert(String::from(new_tfl_root));
 }
 
-#[cfg(feature = "mocking")]
-fn get_data(url: &String) -> Result<String, String> {
-    let client = match CLIENT.lock().unwrap().deref() {
-        Some(ClientType::LIVE) => reqwest_mock::client::GenericClient::direct(),
-        #[cfg(test)]
-        Some(ClientType::TESTING) => reqwest_mock::client::GenericClient::replay_dir("tests/requests"),
-        None => panic!(),
-    };
-    let res = match client.get(url).send() {
+async fn get_data(url: &str) -> Result<String, String> {
+    let mut real_url = url.to_string();
+    if let Some(replacement) = TFL_ROOT.lock().unwrap().deref() {
+        real_url = real_url.replace("https://api.tfl.gov.uk", replacement);
+    }
+    let client = reqwest::Client::new();
+    let res = match client.get(real_url).send().await {
         Ok(val) => val,
         Err(err) => {
             return Err(format!("Can't connect to TfL: {}", err));
         }
     };
-    return res.body_to_utf8().map_err(|e| format!("{:?}", e));
+    return res.text().await.map_err(|e| format!("{:?}", e));
 }
 
-#[cfg(not(feature = "mocking"))]
-fn get_data(url: &String) -> Result<String, String> {
-    return reqwest::get(url)
-        .and_then(|mut r| r.text())
-        .map_err(|e| format!("{:?}", e));
-}
-
-pub fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
-    let buffer = get_data(url)?;
+pub async fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
+    let buffer = get_data(url).await?;
     let obj = match json::parse(&buffer) {
         Ok(val) => val,
         Err(_) => {
@@ -78,7 +60,7 @@ pub fn render_to_response(path: &str, data: &mustache::Data) -> HttpResponse {
     let mut buffer: Vec<u8> = vec![];
     template.render_data(&mut buffer, data).unwrap();
     let mut response = HttpResponse::Ok();
-    response.header(CONTENT_TYPE, "text/html");
+    response.append_header((CONTENT_TYPE, "text/html"));
     response.body(buffer)
 }
 

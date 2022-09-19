@@ -9,14 +9,14 @@ pub struct LocationQuery {
     longitude: f32,
 }
 
-pub fn nearby_handler(query: Query<LocationQuery>) -> HttpResponse {
+pub async fn nearby_handler(query: Query<LocationQuery>) -> HttpResponse {
     let url = &format!(
         "https://api.tfl.gov.\
          uk/StopPoint?lat={}&lon={}\
          &stopTypes=NaptanPublicBusCoachTram&radius=500",
         query.latitude, query.longitude
     );
-    let obj = match common::json_for_url(url) {
+    let obj = match common::json_for_url(url).await {
         Ok(val) => val,
         Err(val) => {
             return HttpResponse::Ok().status(StatusCode::BAD_GATEWAY).body(val);

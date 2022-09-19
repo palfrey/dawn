@@ -14,7 +14,9 @@ jobs:
     strategy:
       matrix:
         rust: [stable, beta, nightly]
-        features: ["--features=lambda --no-default-features", ""]
+        features: [
+          #"--features=lambda --no-default-features",
+          ""]
     steps:
       - name: Install dependencies
         run: |

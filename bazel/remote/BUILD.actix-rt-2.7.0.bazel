@@ -1,0 +1,69 @@
+"""
+@generated
+cargo-raze crate build file.
+
+DO NOT EDIT! Replaced on runs of cargo-raze
+"""
+
+# buildifier: disable=load
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+# buildifier: disable=load
+load(
+    "@rules_rust//rust:rust.bzl",
+    "rust_binary",
+    "rust_library",
+    "rust_test",
+)
+
+package(default_visibility = [
+    # Public for visibility by "@raze__crate__version//" targets.
+    #
+    # Prefer access through "//bazel", which limits external
+    # visibility to explicit Cargo.toml dependencies.
+    "//visibility:public",
+])
+
+licenses([
+    "notice",  # MIT from expression "MIT OR Apache-2.0"
+])
+
+# Generated Targets
+
+# Unsupported target "hyper" with type "example" omitted
+
+# Unsupported target "multi_thread_system" with type "example" omitted
+
+rust_library(
+    name = "actix_rt",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+        "actix-macros",
+        "default",
+        "macros",
+    ],
+    crate_root = "src/lib.rs",
+    crate_type = "lib",
+    data = [],
+    edition = "2018",
+    proc_macro_deps = [
+        "@raze__actix_macros__0_2_3//:actix_macros",
+    ],
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+    version = "2.7.0",
+    # buildifier: leave-alone
+    deps = [
+        "@raze__futures_core__0_3_13//:futures_core",
+        "@raze__tokio__1_16_1//:tokio",
+    ],
+)
+
+# Unsupported target "test-macro-import-conflict" with type "test" omitted
+
+# Unsupported target "tests" with type "test" omitted

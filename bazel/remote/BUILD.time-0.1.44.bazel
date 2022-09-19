@@ -51,11 +51,11 @@ rust_library(
     version = "0.1.44",
     # buildifier: leave-alone
     deps = [
-        "@raze__libc__0_2_86//:libc",
+        "@raze__libc__0_2_126//:libc",
     ] + selects.with_or({
         # cfg(target_os = "wasi")
         (
-            "@rules_rust//rust/platform:wasm32-wasi",
+          "@rules_rust//rust/platform:wasm32-wasi",
         ): [
             "@raze__wasi__0_10_0_wasi_snapshot_preview1//:wasi",
         ],
@@ -63,8 +63,8 @@ rust_library(
     }) + selects.with_or({
         # cfg(windows)
         (
-            "@rules_rust//rust/platform:i686-pc-windows-msvc",
-            "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
+          "@rules_rust//rust/platform:i686-pc-windows-msvc",
+          "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
         ): [
             "@raze__winapi__0_3_9//:winapi",
         ],

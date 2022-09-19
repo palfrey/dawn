@@ -5,8 +5,7 @@ authors = ["Tom Parker-Shemilt <palfrey@tevp.net>"]
 edition = "2018"
 
 [dependencies]
-actix-web = "2"
-hyper = "0.12"
+actix-web = "4"
 percent-encoding = "1"
 log = ">=0.4.5"
 json = "*"
@@ -15,22 +14,23 @@ mustache = "0.8"
 itertools = "*"
 time = "<0.2"
 get_if_addrs = "*"
-cookie = "0.12"
+cookie = "0.16"
 serde = "1.0"
 serde_derive = "1.0"
-reqwest_mock = {optional=true, version="0.6"}
 lazy_static = "1.2"
 env_logger = "*"
 actix_lambda = {optional=true, version="0.2"}
-reqwest = {optional=true, version="0.9", default-features=false}
-actix-rt = "1.0"
+reqwest = {version="0.11", default-features=false, features=["rustls-tls", "blocking"]}
+actix-rt = "2.7"
 
-# Mocking doesn't work along with Lambda, as reqwest_mock needs an old version of reqwest, which needs OpenSSL
-# and compiling OpenSSL with musl is hard on a non-Linux box
+[dev-dependencies]
+wiremock = "0.5"
+tokio = {version="1", features=["rt", "macros"]}
+serde_json = "1"
+
 [features]
-default = ["mocking"]
-mocking = ["reqwest_mock"]
-lambda = ["actix_lambda", "reqwest"]
+default = []
+lambda = ["actix_lambda"]
 
 [profile.release]
 lto = true
@@ -40,3 +40,15 @@ panic = 'abort'
 genmode = "Remote"
 workspace_path = "//bazel"
 package_aliases_dir = "bazel"
+
+[package.metadata.raze.crates.ring.'*']
+compile_data_attr = "glob([\"**/*.der\"])"
+
+[package.metadata.raze.crates.webpki.'*']
+compile_data_attr = "glob([\"**/*.der\"])"
+
+[package.metadata.raze.crates.deadpool.'*']
+compile_data_attr ="[\"README.md\"]"
+
+[package.metadata.raze.crates.deadpool-runtime.'*']
+compile_data_attr ="[\"README.md\"]"
