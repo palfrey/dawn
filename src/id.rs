@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use crate::common;
 use actix_web::http::header::LOCATION;
 use actix_web::{http::StatusCode, web::Path, web::Query, HttpResponse};
-use json::JsonValue;
 use mustache::Data;
 use mustache::MapBuilder;
 use serde::Deserialize;
@@ -24,9 +23,10 @@ pub async fn id_handler((path, query): (Path<(String,)>, Query<IdQuery>)) -> Htt
     let mut response = HttpResponse::Ok();
     let direct_name = query.name.clone().unwrap_or(String::from(""));
     let mut early_quit = false;
-    let mut first_arrivals: HashMap<String, JsonValue> = HashMap::new();
+    let mut first_arrivals: HashMap<String, serde_json::Value> = HashMap::new();
     for naptan_id in obj["lineGroup"]
-        .members()
+        .as_array()
+        .unwrap()
         .into_iter()
         .map(|x| x["naptanIdReference"].as_str().unwrap_or(""))
     {
@@ -42,7 +42,7 @@ pub async fn id_handler((path, query): (Path<(String,)>, Query<IdQuery>)) -> Htt
             Ok(val) => val,
             Err(_) => continue,
         };
-        let first_arrival = stopobj.members().nth(0);
+        let first_arrival = stopobj.as_array().unwrap().get(0);
         if let Some(val) = first_arrival {
             first_arrivals.insert(naptan_id.to_string(), val.clone());
         }
@@ -82,10 +82,10 @@ pub async fn id_handler((path, query): (Path<(String,)>, Query<IdQuery>)) -> Htt
         return response.body("");
     }
     if let Data::Map(ref hash) = data {
-        if let Data::VecVal(ref stops) = hash["stops"] {
+        if let Data::Vec(ref stops) = hash["stops"] {
             if stops.len() == 1 {
                 if let Data::Map(ref stop) = stops[0] {
-                    if let Data::StrVal(ref id) = stop["id"] {
+                    if let Data::String(ref id) = stop["id"] {
                         response.append_header((LOCATION, format!("/arrivals/{}", id)));
                         response.status(StatusCode::PERMANENT_REDIRECT);
                         return response.body("");

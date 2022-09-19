@@ -1,7 +1,6 @@
 use crate::common;
 use actix_web::{http::StatusCode, web::Path, web::Query, HttpRequest, HttpResponse};
 use itertools::Itertools;
-use json;
 use mustache::MapBuilder;
 use serde::Deserialize;
 use std::collections::HashSet;
@@ -27,7 +26,7 @@ pub async fn arrivals_handler(
                 return response.body(val);
             }
         };
-    let members = obj.members();
+    let members = obj.as_array().unwrap();
     let member_slice = members.as_slice();
     if member_slice.is_empty() {
         response.status(StatusCode::BAD_GATEWAY);
@@ -46,11 +45,11 @@ pub async fn arrivals_handler(
             MapBuilder::new()
                 .insert_str("stopName", stopobj["commonName"].as_str().expect("commonName"))
                 .insert_str("stopNumber", "".to_string())
-                .insert_str("when", time::now().strftime("%H:%M").expect("time.now"))
+                .insert_str("when", time::strftime("%H:%M", &time::now()).expect("time.now"))
                 .build()
         } else {
             let last_item = member_slice[0].clone();
-            let sorted_members = members.sorted_by(|a, b| {
+            let sorted_members = members.into_iter().sorted_by(|a, b| {
                 a["expectedArrival"]
                     .as_str()
                     .expect("expectedArrival a")
@@ -99,7 +98,7 @@ pub async fn arrivals_handler(
                                 .insert_str("minutes", until_text)
                                 .insert_str(
                                     "expectedArrival",
-                                    when.to_local().strftime("%H:%M").expect("when"),
+                                    time::strftime("%H:%M", &when.to_local()).expect("when"),
                                 )
                         });
                     }
@@ -110,18 +109,18 @@ pub async fn arrivals_handler(
                     let mut linesv: Vec<&&str> = lines.iter().collect();
                     linesv.sort_by_key(|k| k.parse::<i32>().unwrap_or(0));
                     for line in linesv {
-                        vecb = vecb.push_map(|mapbuilder| mapbuilder.insert_str("line", line))
+                        vecb = vecb.push_map(|mapbuilder| mapbuilder.insert_str("line", *line))
                     }
                     vecb
                 })
                 .insert_str("stopId", stopid)
-                .insert_bool("inFavourites", favourites[stopid] != json::JsonValue::Null)
+                .insert_bool("inFavourites", !favourites[stopid].is_null())
                 .insert_str(
                     "stopName",
                     last_item["stationName"].as_str().expect("stationName"),
                 )
                 .insert_str("stopNumber", stop_number)
-                .insert_str("when", time::now().strftime("%H:%M").expect("time now"))
+                .insert_str("when", time::strftime("%H:%M", &time::now()).expect("time now"))
                 .build()
         }
     };

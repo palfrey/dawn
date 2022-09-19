@@ -26,14 +26,16 @@ pub async fn nearby_handler(query: Query<LocationQuery>) -> HttpResponse {
     let data = MapBuilder::new()
         .insert_vec("stops", |vecbuilder| {
             let mut vecb = vecbuilder;
-            for stop in obj["stopPoints"].members() {
+            for stop in obj["stopPoints"].as_array().unwrap() {
                 vecb = vecb.push_map(|mapbuilder| {
                     let letter = match stop["stopLetter"].as_str() {
                         Some(val) => format!(" ({})", val),
                         None => "".to_string(),
                     };
                     let direction = stop["additionalProperties"]
-                        .members()
+                        .as_array()
+                        .unwrap()
+                        .into_iter()
                         .find(|p| p["key"] == "Towards")
                         .map_or("".to_string(), |v| {
                             format!("towards {}", v["value"].as_str().unwrap_or(""))

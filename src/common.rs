@@ -1,10 +1,10 @@
 use actix_web::http::header::CONTENT_TYPE;
 use actix_web::{HttpRequest, HttpResponse};
-use json;
 use lazy_static::lazy_static;
 use mustache;
 use mustache::MapBuilder;
 use percent_encoding;
+use serde_json::json;
 use std::collections::HashMap;
 use std::ops::Deref;
 use std::sync::Mutex;
@@ -41,9 +41,9 @@ async fn get_data(url: &str) -> Result<String, String> {
     return res.text().await.map_err(|e| format!("{:?}", e));
 }
 
-pub async fn json_for_url(url: &String) -> Result<json::JsonValue, String> {
+pub async fn json_for_url(url: &String) -> Result<serde_json::Value, String> {
     let buffer = get_data(url).await?;
-    let obj = match json::parse(&buffer) {
+    let obj = match serde_json::from_str(&buffer) {
         Ok(val) => val,
         Err(_) => {
             return Err(format!("Bad json for {}: {} ", url, buffer));
@@ -66,16 +66,16 @@ pub fn render_to_response(path: &str, data: &mustache::Data) -> HttpResponse {
 
 pub static KEY: &'static str = "favourites";
 
-pub fn favourites(req: &HttpRequest) -> json::JsonValue {
+pub fn favourites(req: &HttpRequest) -> serde_json::Value {
     let cookie = req.cookie(KEY);
     match cookie {
         Some(val) => {
-            match json::parse(&val.value()) {
+            match serde_json::from_str(&val.value()) {
                 Ok(val) => val,
-                Err(_) => json::JsonValue::new_object(), // assume junk
+                Err(_) => json!({}), // assume junk
             }
         }
-        None => json::JsonValue::new_object(),
+        None => json!({}),
     }
 }
 
@@ -84,9 +84,12 @@ pub fn mustache_favourites(req: &HttpRequest) -> mustache::Data {
     MapBuilder::new()
         .insert_vec("favourites", |vecbuilder| {
             let mut vecb = vecbuilder;
-            for fav in favourites.entries() {
-                vecb = vecb
-                    .push_map(|mapbuilder| mapbuilder.insert_str("key", fav.0).insert_str("value", fav.1));
+            for fav in favourites.as_object().unwrap() {
+                vecb = vecb.push_map(|mapbuilder| {
+                    mapbuilder
+                        .insert_str("key", fav.0)
+                        .insert_str("value", fav.1.as_str().unwrap())
+                });
             }
             vecb
         })
