@@ -28,10 +28,18 @@ pub struct AddFavouriteData {
 
 pub async fn add_favourite((req, form): (HttpRequest, Form<AddFavouriteData>)) -> HttpResponse {
     let mut existing = common::favourites(&req);
-    existing[&form.stopid] = serde_json::from_str(&form.pretty_name.clone()).unwrap();
-    let mut response = HttpResponse::Ok();
-    set_cookie(&mut response, existing);
-    response.body("")
+    match serde_json::from_str(&form.pretty_name.clone()) {
+        Ok(value) => {
+            existing[&form.stopid] = value;
+            let mut response = HttpResponse::Ok();
+            set_cookie(&mut response, existing);
+            response.body("")
+        }
+        Err(_) => {
+            let mut response = HttpResponse::BadRequest();
+            response.body(format!("Bad form: {}", existing))
+        }
+    }
 }
 
 #[derive(Deserialize)]
