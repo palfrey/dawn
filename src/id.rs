@@ -42,7 +42,7 @@ pub async fn id_handler((path, query): (Path<(String,)>, Query<IdQuery>)) -> Htt
             Ok(val) => val,
             Err(_) => continue,
         };
-        let first_arrival = stopobj.as_array().unwrap().get(0);
+        let first_arrival = stopobj.as_array().and_then(|v| v.get(0));
         if let Some(val) = first_arrival {
             first_arrivals.insert(naptan_id.to_string(), val.clone());
         }
