@@ -21,7 +21,6 @@ lazy_static = "1.2"
 env_logger = "*"
 #actix_lambda = {optional=true, version="0.2"}
 reqwest = {version="0.11", default-features=false, features=["rustls-tls", "blocking"]}
-actix-rt = "2.7"
 
 [dev-dependencies]
 wiremock = "0.5"

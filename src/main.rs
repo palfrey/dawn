@@ -30,7 +30,7 @@ fn config(cfg: &mut web::ServiceConfig) {
 }
 
 #[cfg(not(feature = "lambda"))]
-#[actix_rt::main]
+#[actix_web::main]
 async fn main() {
     log4rs::init_file("log.yaml", Default::default()).unwrap();
     let port = env::var("PORT")
