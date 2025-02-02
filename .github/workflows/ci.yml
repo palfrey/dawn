@@ -61,7 +61,7 @@ jobs:
 
       - uses: asdf-vm/actions/setup@v3.0.2
       - run: |
-          asdf plugin-add bazel https://github.com/mrinalwadhwa/asdf-bazel.git
+          asdf plugin add bazel https://github.com/mrinalwadhwa/asdf-bazel.git
           asdf install
         
       - name: Bazel build
