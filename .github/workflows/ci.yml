@@ -58,13 +58,13 @@ jobs:
           key: ${{ runner.os }}-bazel-${{ hashFiles('bazel/crates.bzl') }}
           restore-keys: |
             ${{ runner.os }}-bazel-
-        
-      - name: Install Bazelisk
-        uses: tullyliu/bazelisk-action@1.2
+
+      - uses: asdf-vm/actions/setup@v3.0.2
         with:
-          version: '1.7.5'
-          bazel-install-path: './.local/bin'
-          os: 'linux'
+          asdf_branch: v0.15.0
+      - run: |
+          asdf plugin-add bazel https://github.com/mrinalwadhwa/asdf-bazel.git
+          asdf install
         
       - name: Bazel build
         run: bazel build //:dawn
