@@ -49,21 +49,20 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Mount bazel cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/bazel
           key: ${{ runner.os }}-bazel-${{ hashFiles('bazel/crates.bzl') }}
           restore-keys: |
             ${{ runner.os }}-bazel-
 
-      - uses: asdf-vm/actions/setup@v3.0.2
-        with:
-          asdf_branch: v0.15.0
+      # For 0.16.0 support, see https://github.com/asdf-vm/actions/issues/587#issuecomment-2723408197
+      - uses: asdf-vm/actions/setup@1117842ea70e2711a0072e3a71265cbfe2c830be
       - run: |
-          asdf plugin-add bazel https://github.com/mrinalwadhwa/asdf-bazel.git
+          asdf plugin add bazel https://github.com/mrinalwadhwa/asdf-bazel.git
           asdf install
         
       - name: Bazel build
