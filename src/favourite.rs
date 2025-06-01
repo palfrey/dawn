@@ -41,10 +41,10 @@ pub struct RemoveFavouriteData {
 
 pub async fn remove_favourite((req, form): (HttpRequest, Form<RemoveFavouriteData>)) -> HttpResponse {
     let mut existing = common::favourites(&req);
-    existing
-        .as_array_mut()
-        .unwrap()
-        .retain(|x| x != &json!(&form.stopid));
+    existing.as_array_mut().and_then(|existing_array| {
+        existing_array.retain(|x| x != &json!(&form.stopid));
+        Some(())
+    });
     let mut response = HttpResponse::Ok();
     set_cookie(&mut response, existing);
     response.body("")
