@@ -22,7 +22,6 @@ rust_binary(
     compile_data = TEMPLATES
 )
 
-
 rust_test(
     name = "dawn_test",
     crate = ":dawn",
