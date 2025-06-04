@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 actix-web = "4"
-percent-encoding = "1"
+percent-encoding = "2"
 log = ">=0.4.5"
 log4rs = {version = ">= 1.2.0", features=["yaml_format"]}
 mustache = "0.9"
