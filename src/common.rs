@@ -97,5 +97,5 @@ pub fn mustache_favourites(req: &HttpRequest) -> mustache::Data {
 }
 
 pub fn query_encode(input: &str) -> String {
-    percent_encoding::utf8_percent_encode(input, percent_encoding::QUERY_ENCODE_SET).collect::<String>()
+    percent_encoding::utf8_percent_encode(input, percent_encoding::CONTROLS).collect::<String>()
 }
