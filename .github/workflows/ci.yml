@@ -10,7 +10,7 @@ name: CI
 
 jobs:
   build_and_test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         rust: [stable, beta, nightly]
@@ -46,7 +46,7 @@ jobs:
         run: ./test.sh
   
   bazel:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -59,11 +59,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bazel-
 
-      # For 0.16.0 support, see https://github.com/asdf-vm/actions/issues/587#issuecomment-2723408197
-      - uses: asdf-vm/actions/setup@1117842ea70e2711a0072e3a71265cbfe2c830be
-      - run: |
-          asdf plugin add bazel https://github.com/mrinalwadhwa/asdf-bazel.git
-          asdf install
+      - uses: asdf-vm/actions/install@v4
         
       - name: Bazel build
         run: bazel build //:dawn
