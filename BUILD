@@ -1,5 +1,6 @@
-load("@rules_rust//rust:rust.bzl", "rust_binary", "rust_test")
-load("@rules_rust//cargo:cargo_build_script.bzl", "cargo_build_script")
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_test")
+load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
+load("@crates//:defs.bzl", "aliases", "all_crate_deps")
 
 TEMPLATES = glob(["resources/templates/*.mustache"])
 
@@ -15,32 +16,16 @@ cargo_build_script(
 rust_binary(
     name = "dawn",
     srcs = glob(["src/*.rs"]),
-    deps = [
-        "//bazel:actix_web",
-        "//bazel:actix_rt",
-        "//bazel:log",
-        "//bazel:log4rs",
-        "//bazel:serde",
-        "//bazel:get_if_addrs",
-        "//bazel:lazy_static",
-        "//bazel:time",
-        "//bazel:mustache",
-        "//bazel:itertools",
-        "//bazel:percent_encoding",
-        "//bazel:cookie",
-        "//bazel:env_logger",
-        "//bazel:reqwest",
-        "//bazel:wiremock",
-        "//bazel:serde_json",
-        "//bazel:tokio",
-        ":build_script",
-    ],
+    deps = all_crate_deps(
+        normal = True,
+    ) + [":build_script"],
     compile_data = TEMPLATES
 )
-
 
 rust_test(
     name = "dawn_test",
     crate = ":dawn",
-    compile_data = TEMPLATES # Known bug https://github.com/bazelbuild/rules_rust/issues/567
+    deps = all_crate_deps(
+        normal_dev = True,
+    )
 )

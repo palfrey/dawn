@@ -20,7 +20,7 @@ Heroku Setup
 1. Make [new Heroku app](https://dashboard.heroku.com/new?org=personal-apps)
 2. `heroku git:remote --app dawn-stops` (replacing "dawn-stops" with the name of your app)
 3. `heroku buildpacks:set https://github.com/Hoverbear/heroku-buildpack-rust.git`
-4. `heroku config:set RUST_VERSION=1.62.1 TZ="Europe/London" RUST_BACKTRACE=1`
+4. `heroku config:set RUST_VERSION=1.87.0 TZ="Europe/London" RUST_BACKTRACE=1`
 5. ` git push heroku master`
 
 AWS Lambda Setup
