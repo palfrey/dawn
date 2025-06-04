@@ -28,7 +28,7 @@ jobs:
           profile: minimal
           toolchain: ${{ matrix.rust }}
           components: rustfmt
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - name: Check formatting
         uses: actions-rs/cargo@v1
         with:
