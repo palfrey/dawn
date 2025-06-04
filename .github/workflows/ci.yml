@@ -59,10 +59,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bazel-
 
-      # For 0.16.0 support, see https://github.com/asdf-vm/actions/issues/587#issuecomment-2723408197
-      - uses: asdf-vm/actions/setup@1117842ea70e2711a0072e3a71265cbfe2c830be
+      - uses: asdf-vm/actions/setup@v4
       - run: |
-          asdf plugin add bazel https://github.com/mrinalwadhwa/asdf-bazel.git
           asdf install
         
       - name: Bazel build
