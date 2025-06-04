@@ -11,7 +11,7 @@ log = ">=0.4.5"
 log4rs = {version = ">= 1.2.0", features=["yaml_format"]}
 mustache = "0.9"
 itertools = "*"
-time = "<0.2"
+time = "<0.3"
 get_if_addrs = "*"
 cookie = "0.16"
 serde = "1"
