@@ -1,14 +1,19 @@
 use crate::common;
 use actix_web::{http::StatusCode, web::Path, web::Query, HttpRequest, HttpResponse};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use itertools::Itertools;
 use mustache::MapBuilder;
 use serde::Deserialize;
 use std::collections::HashSet;
-use time;
+use chrono_tz::{Europe::London, Tz};
 
 #[derive(Deserialize)]
 pub struct ArrivalsQuery {
     line: Option<String>,
+}
+
+fn london_now() -> DateTime<Tz> {
+    Utc::now().with_timezone(&London)
 }
 
 pub async fn arrivals_handler(
@@ -45,7 +50,7 @@ pub async fn arrivals_handler(
             MapBuilder::new()
                 .insert_str("stopName", stopobj["commonName"].as_str().expect("commonName"))
                 .insert_str("stopNumber", "".to_string())
-                .insert_str("when", time::strftime("%H:%M", &time::now()).expect("time.now"))
+                .insert_str("when", format!("{}", london_now().format("%H:%M")))
                 .build()
         } else {
             let last_item = member_slice[0].clone();
@@ -78,9 +83,9 @@ pub async fn arrivals_handler(
                         }
                         vecb = vecb.push_map(|mapbuilder| {
                             let expected_arrival = stop["expectedArrival"].as_str().expect("expectedArrival");
-                            let when = time::strptime(expected_arrival, "%FT%TZ")
-                                .expect(&format!("strptime: {}", expected_arrival));
-                            let until = (when - time::now()).num_minutes();
+                            let when = NaiveDateTime::parse_from_str(expected_arrival, "%FT%TZ")
+                                .expect(&format!("strptime: {}", expected_arrival)).and_local_timezone(London).unwrap();
+                            let until = (when - london_now()).num_minutes();
                             let until_text = if until == 1 {
                                 "1 minute".to_string()
                             } else if until > 0 {
@@ -98,7 +103,7 @@ pub async fn arrivals_handler(
                                 .insert_str("minutes", until_text)
                                 .insert_str(
                                     "expectedArrival",
-                                    time::strftime("%H:%M", &when.to_local()).expect("when"),
+                                    format!("{}", &when.format("%H:%M")),
                                 )
                         });
                     }
@@ -120,7 +125,7 @@ pub async fn arrivals_handler(
                     last_item["stationName"].as_str().expect("stationName"),
                 )
                 .insert_str("stopNumber", stop_number)
-                .insert_str("when", time::strftime("%H:%M", &time::now()).expect("time now"))
+                .insert_str("when", format!("{}", london_now().format("%H:%M")))
                 .build()
         }
     };

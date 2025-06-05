@@ -11,7 +11,6 @@ log = ">=0.4.5"
 log4rs = {version = ">= 1.2.0", features=["yaml_format"]}
 mustache = "0.9"
 itertools = "*"
-time = "<0.3"
 get_if_addrs = "*"
 cookie = "0.16"
 serde = "1"
@@ -21,6 +20,8 @@ lazy_static = "1.2"
 env_logger = "*"
 #actix_lambda = {optional=true, version="0.2"}
 reqwest = {version="0.11", default-features=false, features=["rustls-tls", "blocking"]}
+chrono-tz = "0.10.3"
+chrono = {version= "0.4.41", default-features = false, features=["alloc", "now"] }
 
 [dev-dependencies]
 wiremock = "0.5"
