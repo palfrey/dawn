@@ -1,11 +1,11 @@
 use crate::common;
 use actix_web::{http::StatusCode, web::Path, web::Query, HttpRequest, HttpResponse};
 use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono_tz::{Europe::London, Tz};
 use itertools::Itertools;
 use mustache::MapBuilder;
 use serde::Deserialize;
 use std::collections::HashSet;
-use chrono_tz::{Europe::London, Tz};
 
 #[derive(Deserialize)]
 pub struct ArrivalsQuery {
@@ -84,7 +84,9 @@ pub async fn arrivals_handler(
                         vecb = vecb.push_map(|mapbuilder| {
                             let expected_arrival = stop["expectedArrival"].as_str().expect("expectedArrival");
                             let when = NaiveDateTime::parse_from_str(expected_arrival, "%FT%TZ")
-                                .expect(&format!("strptime: {}", expected_arrival)).and_local_timezone(London).unwrap();
+                                .expect(&format!("strptime: {}", expected_arrival))
+                                .and_local_timezone(London)
+                                .unwrap();
                             let until = (when - london_now()).num_minutes();
                             let until_text = if until == 1 {
                                 "1 minute".to_string()
@@ -101,10 +103,7 @@ pub async fn arrivals_handler(
                                 )
                                 .insert_str("towards", stop["towards"].as_str().expect("towards"))
                                 .insert_str("minutes", until_text)
-                                .insert_str(
-                                    "expectedArrival",
-                                    format!("{}", &when.format("%H:%M")),
-                                )
+                                .insert_str("expectedArrival", format!("{}", &when.format("%H:%M")))
                         });
                     }
                     vecb
