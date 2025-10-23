@@ -57,14 +57,6 @@ jobs:
           account: tom-parker-shemilt
           prefix: tom-parker-shemilt-y0738m
 
-      - name: Mount bazel cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/bazel
-          key: ${{ runner.os }}-bazel-${{ hashFiles('MODULE.bazel.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bazel-
-
       - uses: asdf-vm/actions/install@v4
         
       - name: Bazel build
