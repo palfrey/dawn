@@ -1,0 +1,3 @@
+build --remote_default_exec_properties="container-image=rust:1.87"
+build --remote_download_minimal
+build --build_event_publish_all_actions
