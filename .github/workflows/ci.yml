@@ -51,7 +51,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - uses: TraceMachina/nativelink-action@latest
+      - uses: TraceMachina/nativelink-action@v0
         with:
           api_key: ${{ secrets.NATIVELINK_API_KEY }}
           account: tom-parker-shemilt
