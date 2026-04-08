@@ -83,12 +83,10 @@ pub async fn arrivals_handler(
                         }
                         vecb = vecb.push_map(|mapbuilder| {
                             let expected_arrival = stop["expectedArrival"].as_str().expect("expectedArrival");
-                            println!("Expected: {expected_arrival}");
                             let when = NaiveDateTime::parse_from_str(expected_arrival, "%FT%TZ")
                                 .expect(&format!("strptime: {}", expected_arrival))
                                 .and_utc()
                                 .with_timezone(&London);
-                            println!("when: {when}");
                             let until = (when - london_now()).num_minutes();
                             let until_text = if until == 1 {
                                 "1 minute".to_string()
