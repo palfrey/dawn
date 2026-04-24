@@ -17,14 +17,14 @@ serde = "1"
 serde_derive = "1"
 serde_json = "1"
 lazy_static = "1.2"
-env_logger = "*"
+env_logger = "0.11"
 #actix_lambda = {optional=true, version="0.2"}
 reqwest = {version="0.13", default-features=false, features=["rustls", "blocking"]}
 chrono-tz = "0.10.3"
 chrono = {version= "0.4.41", default-features = false, features=["alloc", "now"] }
 
 [dev-dependencies]
-wiremock = "0.5"
+wiremock = "0.6"
 tokio = {version="1", features=["rt", "macros"]}
 
 [features]
