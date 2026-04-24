@@ -9,11 +9,6 @@
   ],
   packageRules: [
     {
-      // Don't really need to upgrade Python
-      matchManagers: ["pyenv"],
-      enabled: false,
-    },
-    {
       matchUpdateTypes: ["patch", "minor"],
       enabled: false
     },
