@@ -5,10 +5,10 @@ authors = ["Tom Parker-Shemilt <palfrey@tevp.net>"]
 edition = "2018"
 
 [dependencies]
-actix-web = "4"
+actix-web = "4.13"
 percent-encoding = "2"
 log = ">=0.4.5"
-log4rs = {version = ">= 1.2.0", features=["yaml_format"]}
+log4rs = {version = ">= 1.4.0", features=["yaml_format"]}
 mustache = "0.9"
 itertools = "*"
 get_if_addrs = "*"
