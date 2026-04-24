@@ -24,7 +24,7 @@ chrono-tz = "0.10.3"
 chrono = {version= "0.4.41", default-features = false, features=["alloc", "now"] }
 
 [dev-dependencies]
-wiremock = "0.5"
+wiremock = "0.6"
 tokio = {version="1", features=["rt", "macros"]}
 
 [features]
