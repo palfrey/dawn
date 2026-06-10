@@ -1,0 +1,2 @@
+# Allow user-side customization.
+try-import %workspace%/user.bazelrc
