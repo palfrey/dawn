@@ -12,7 +12,7 @@ log4rs = {version = ">= 1.4.0", features=["yaml_format"]}
 mustache = "0.9"
 itertools = "*"
 get_if_addrs = "*"
-cookie = "0.16"
+cookie = "0.18"
 serde = "1"
 serde_derive = "1"
 serde_json = "1"
